@@ -3,305 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sole Portofino - Signature Gingham Tote | Lüks İtalyan Çanta</title>
-    <meta name="description" content="İtalyan zarafetini günlük hayatınıza taşıyan Sole Portofino Signature Tote. Premium deri detaylı, el yapımı lüks çanta.">
-    <meta name="keywords" content="sole portofino, lüks çanta, italyan çanta, gingham tote, el çantası, deri çanta">
-    
-    <!-- Open Graph -->
-    <meta property="og:title" content="Sole Portofino Signature Gingham Tote">
-    <meta property="og:description" content="İtalyan zarafetini günlük hayatınıza taşıyan lüks el çantası">
-    <meta property="og:image" content="images/Leonardo_Kino_XL_A_highquality_studio_photograph_of_a_stylish_3.jpg">
-    <meta property="og:type" content="product">
-    
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
-    
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
-    <!-- Styles -->
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/responsive.css">
+    <title>Sole Portofino - Admin Giriş</title>
+    <link rel="stylesheet" href="css/admin.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
-<body>
-    
-    <!-- Header -->
-    <header class="site-header">
-        <div class="container">
-            <div class="header-wrapper">
-                <div class="logo">
-                    <a href="/">SOLE PORTOFINO</a>
+<body class="login-page">
+    <div class="login-container">
+        <div class="login-box">
+            <div class="login-header">
+                <h1>SOLE PORTOFINO</h1>
+                <p>Yönetim Paneli</p>
+            </div>
+            
+            <form id="login-form" class="login-form">
+                <div class="form-group">
+                    <label for="email">E-posta</label>
+                    <input type="email" id="email" name="email" required placeholder="admin@soleportofino.com">
                 </div>
                 
-                <nav class="main-nav">
-                    <ul>
-                        <li><a href="#product">Ürün</a></li>
-                        <li><a href="#features">Özellikler</a></li>
-                        <li><a href="#about">Hakkımızda</a></li>
-                        <li><a href="#contact">İletişim</a></li>
-                    </ul>
-                </nav>
-                
-                <div class="header-actions">
-                    <button class="cart-icon" onclick="window.location.href='cart.html'">
-                        <i class="fas fa-shopping-bag"></i>
-                        <span class="cart-count" id="cartCount">0</span>
-                    </button>
-                    <button class="mobile-menu-toggle">
-                        <i class="fas fa-bars"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </header>
-    
-    <!-- Hero Section -->
-    <section class="hero-section">
-        <div class="hero-content">
-            <h1 class="hero-title">Italian Elegance<br>Meets Everyday Luxury</h1>
-            <p class="hero-subtitle">Sole Portofino Signature Collection</p>
-            <a href="#product" class="hero-cta">Keşfet</a>
-        </div>
-        <div class="hero-image">
-            <img src="images/Leonardo_Kino_XL_A_highquality_studio_photograph_of_a_stylish_3.jpg" alt="Sole Portofino Signature Gingham Tote">
-        </div>
-    </section>
-    
-    <!-- Product Section -->
-    <section id="product" class="product-section">
-        <div class="container">
-            <div class="product-grid">
-                <!-- Product Images -->
-                <div class="product-gallery">
-                    <div class="main-image">
-                        <img id="mainProductImage" src="images/Leonardo_Kino_XL_A_highquality_studio_photograph_of_a_stylish_3.jpg" alt="Sole Portofino Çanta">
-                    </div>
-                    <div class="thumbnail-images">
-                        <img src="images/Leonardo_Kino_XL_A_highquality_studio_photograph_of_a_stylish_3.jpg" 
-                             onclick="changeImage(this.src)" 
-                             alt="Ürün görseli 1" 
-                             class="active">
-                        <img src="images/Default_Showcase_the_bag_from_multiple_angles_front_view_side__0.jpg" 
-                             onclick="changeImage(this.src)" 
-                             alt="Ürün görseli 2">
-                    </div>
+                <div class="form-group">
+                    <label for="password">Şifre</label>
+                    <input type="password" id="password" name="password" required placeholder="••••••••">
                 </div>
                 
-                <!-- Product Info -->
-                <div class="product-info">
-                    <h2 class="product-title">Sole Portofino Signature Gingham Tote</h2>
-                    
-                    <div class="product-price">
-                        <span class="price-current">₺2,999</span>
-                        <span class="price-old">₺3,500</span>
-                        <span class="price-discount">%14 İndirim</span>
-                    </div>
-                    
-                    <div class="product-description">
-                        <p>İtalyan zarafetini günlük hayatınıza taşıyan Sole Portofino Signature Tote, klasik vichy desenini modern lüksle buluşturuyor. El yapımı deri detaylar ve özenle seçilmiş kumaşlarla üretilen bu özel parça, hem şehir hayatında hem de sahil kaçamaklarınızda tarzınızı tamamlayacak.</p>
-                    </div>
-                    
-                    <div class="product-features">
-                        <h3>Özellikler</h3>
-                        <ul>
-                            <li><i class="fas fa-check"></i> Premium İtalyan deri sap ve taban</li>
-                            <li><i class="fas fa-check"></i> Klasik kırmızı-beyaz kareli (gingham) desen</li>
-                            <li><i class="fas fa-check"></i> Geniş iç hacim ve cep detayı</li>
-                            <li><i class="fas fa-check"></i> Altın rengi logo baskısı</li>
-                            <li><i class="fas fa-check"></i> El işçiliği üretim</li>
-                        </ul>
-                    </div>
-                    
-                    <div class="product-dimensions">
-                        <h3>Boyutlar</h3>
-                        <div class="dimensions-grid">
-                            <div class="dimension-item">
-                                <span class="label">Genişlik</span>
-                                <span class="value">45 cm</span>
-                            </div>
-                            <div class="dimension-item">
-                                <span class="label">Yükseklik</span>
-                                <span class="value">35 cm</span>
-                            </div>
-                            <div class="dimension-item">
-                                <span class="label">Derinlik</span>
-                                <span class="value">15 cm</span>
-                            </div>
-                            <div class="dimension-item">
-                                <span class="label">Sap</span>
-                                <span class="value">25 cm</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="product-actions">
-                        <div class="quantity-selector">
-                            <button onclick="decreaseQuantity()">-</button>
-                            <input type="number" id="quantity" value="1" min="1" max="10">
-                            <button onclick="increaseQuantity()">+</button>
-                        </div>
-                        <button class="add-to-cart" onclick="addToCart()">
-                            <i class="fas fa-shopping-bag"></i>
-                            Sepete Ekle
-                        </button>
-                    </div>
-                    
-                    <div class="product-extras">
-                        <div class="extra-item">
-                            <i class="fas fa-truck"></i>
-                            <span>Ücretsiz Kargo</span>
-                        </div>
-                        <div class="extra-item">
-                            <i class="fas fa-shield-alt"></i>
-                            <span>2 Yıl Garanti</span>
-                        </div>
-                        <div class="extra-item">
-                            <i class="fas fa-undo"></i>
-                            <span>14 Gün İade</span>
-                        </div>
-                    </div>
-                    
-                    <div class="whatsapp-order">
-                        <a href="https://wa.me/905555555555?text=Merhaba, Sole Portofino Signature Gingham Tote hakkında bilgi almak istiyorum." 
-                           target="_blank" 
-                           class="whatsapp-btn">
-                            <i class="fab fa-whatsapp"></i>
-                            WhatsApp ile Sipariş Ver
-                        </a>
-                    </div>
+                <div class="form-group remember-me">
+                    <label>
+                        <input type="checkbox" name="remember"> Beni hatırla
+                    </label>
                 </div>
-            </div>
-        </div>
-    </section>
-    
-    <!-- Features Section -->
-    <section id="features" class="features-section">
-        <div class="container">
-            <h2 class="section-title">Neden Sole Portofino?</h2>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-hand-sparkles"></i>
-                    </div>
-                    <h3>El Yapımı Üretim</h3>
-                    <p>Her bir çanta, uzman zanaatkarlar tarafından özenle üretilir</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-gem"></i>
-                    </div>
-                    <h3>Premium Malzeme</h3>
-                    <p>En kaliteli İtalyan deri ve kumaşlar kullanılır</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-leaf"></i>
-                    </div>
-                    <h3>Sürdürülebilir</h3>
-                    <p>Çevre dostu üretim yöntemleri ve malzemeler</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-heart"></i>
-                    </div>
-                    <h3>Zamansız Tasarım</h3>
-                    <p>Modası geçmeyen, klasik İtalyan stili</p>
-                </div>
-            </div>
-        </div>
-    </section>
-    
-    <!-- About Section -->
-    <section id="about" class="about-section">
-        <div class="container">
-            <div class="about-content">
-                <div class="about-text">
-                    <h2>İtalyan Rivierası'ndan İlham</h2>
-                    <p>Sole Portofino, Akdeniz'in büyüleyici güzelliğinden ve İtalyan yaşam tarzının zarafetinden ilham alarak doğdu. Her bir çantamız, Portofino'nun dar sokaklarında gezinen, güneşin altında kahve yudumlayan ve denizin kokusunu içine çeken kadınlar için tasarlandı.</p>
-                    <p>Klasik gingham desenimiz, İtalyan pikniklerinin ve yaz günlerinin nostaljisini taşıyor. Premium deri detaylarımız ise lüksü günlük hayatın bir parçası haline getiriyor.</p>
-                </div>
-                <div class="about-image">
-                    <img src="images/Leonardo_Kino_XL_A_highquality_studio_photograph_of_a_stylish_3.jpg" alt="Sole Portofino Hikayesi">
-                </div>
-            </div>
-        </div>
-    </section>
-    
-    <!-- Newsletter Section -->
-    <section class="newsletter-section">
-        <div class="container">
-            <h2>Yeniliklerden Haberdar Olun</h2>
-            <p>Özel indirimler ve yeni koleksiyonlar için bültenimize abone olun</p>
-            <form class="newsletter-form" onsubmit="subscribeNewsletter(event)">
-                <input type="email" placeholder="E-posta adresiniz" required>
-                <button type="submit">Abone Ol</button>
+                
+                <button type="submit" class="login-button">
+                    <span class="button-text">Giriş Yap</span>
+                    <span class="button-loading" style="display: none;">
+                        <svg class="spinner" width="20" height="20" viewBox="0 0 50 50">
+                            <circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle>
+                        </svg>
+                    </span>
+                </button>
+                
+                <div class="error-message" id="error-message" style="display: none;"></div>
             </form>
-        </div>
-    </section>
-    
-    <!-- Footer -->
-    <footer id="contact" class="site-footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-column">
-                    <h3>Sole Portofino</h3>
-                    <p>İtalyan zarafeti ve el işçiliğiyle üretilen lüks çantalar.</p>
-                    <div class="social-links">
-                        <a href="#"><i class="fab fa-instagram"></i></a>
-                        <a href="#"><i class="fab fa-facebook"></i></a>
-                        <a href="#"><i class="fab fa-pinterest"></i></a>
-                    </div>
-                </div>
-                <div class="footer-column">
-                    <h4>Hızlı Linkler</h4>
-                    <ul>
-                        <li><a href="#product">Ürün</a></li>
-                        <li><a href="#features">Özellikler</a></li>
-                        <li><a href="#about">Hakkımızda</a></li>
-                        <li><a href="cart.html">Sepetim</a></li>
-                    </ul>
-                </div>
-                <div class="footer-column">
-                    <h4>Müşteri Hizmetleri</h4>
-                    <ul>
-                        <li><a href="#">Kargo Bilgileri</a></li>
-                        <li><a href="#">İade ve Değişim</a></li>
-                        <li><a href="#">Garanti Koşulları</a></li>
-                        <li><a href="#">SSS</a></li>
-                    </ul>
-                </div>
-                <div class="footer-column">
-                    <h4>İletişim</h4>
-                    <ul>
-                        <li><i class="fas fa-envelope"></i> info@soleportofino.com</li>
-                        <li><i class="fas fa-phone"></i> +90 555 555 55 55</li>
-                        <li><i class="fas fa-map-marker-alt"></i> İstanbul, Türkiye</li>
-                    </ul>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2024 Sole Portofino. Tüm hakları saklıdır.</p>
-            </div>
-        </div>
-    </footer>
-    
-    <!-- Success Modal -->
-    <div id="successModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <i class="fas fa-check-circle"></i>
-            <h3>Ürün Sepete Eklendi!</h3>
-            <p>Sole Portofino Signature Gingham Tote sepetinize eklendi.</p>
-            <div class="modal-actions">
-                <button onclick="closeModal()">Alışverişe Devam Et</button>
-                <button onclick="window.location.href='cart.html'" class="primary">Sepete Git</button>
+            
+            <div class="login-footer">
+                <p>Güvenli bağlantı <span class="lock-icon">🔒</span></p>
             </div>
         </div>
     </div>
-    
-    <!-- Scripts -->
-    <script src="js/main.js"></script>
+
+    <!-- Supabase Client -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="js/auth.js"></script>
 </body>
 </html>

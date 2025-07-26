@@ -1,20 +1,23 @@
-// Cloudflare Pages Worker for environment variable injection
+// Cloudflare Pages Worker - Admin Panel
+// Injects environment variables into JavaScript files
 
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     
-    // Handle requests to auth.js
-    if (url.pathname.endsWith('/js/auth.js')) {
-      // Fetch the original file
+    // Handle JavaScript files to inject environment variables
+    if (url.pathname.endsWith('.js')) {
       const response = await env.ASSETS.fetch(request);
       let content = await response.text();
       
       // Replace placeholders with actual environment variables
-      content = content.replace('__SUPABASE_URL__', env.SUPABASE_URL || '');
-      content = content.replace('__SUPABASE_ANON_KEY__', env.SUPABASE_ANON_KEY || '');
+      if (env.SUPABASE_URL) {
+        content = content.replace(/__SUPABASE_URL__/g, env.SUPABASE_URL);
+      }
+      if (env.SUPABASE_ANON_KEY) {
+        content = content.replace(/__SUPABASE_ANON_KEY__/g, env.SUPABASE_ANON_KEY);
+      }
       
-      // Return modified content
       return new Response(content, {
         headers: {
           'Content-Type': 'application/javascript',
