@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sole Portofino - Admin Dashboard</title>
+    <link rel="stylesheet" href="css/admin.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h2>SOLE PORTOFINO</h2>
+            <span class="admin-badge">Admin</span>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="nav-item active">
+                <span class="icon">📊</span>
+                <span>Dashboard</span>
+            </a>
+            <a href="orders.html" class="nav-item">
+                <span class="icon">📦</span>
+                <span>Siparişler</span>
+                <span class="badge" id="new-orders-count">0</span>
+            </a>
+            <a href="products.html" class="nav-item">
+                <span class="icon">👜</span>
+                <span>Ürün Yönetimi</span>
+            </a>
+            <a href="customers.html" class="nav-item">
+                <span class="icon">👥</span>
+                <span>Müşteriler</span>
+            </a>
+            <a href="analytics.html" class="nav-item">
+                <span class="icon">📈</span>
+                <span>Analizler</span>
+            </a>
+            <a href="returns.html" class="nav-item">
+                <span class="icon">↩️</span>
+                <span>İadeler</span>
+            </a>
+            <a href="settings.html" class="nav-item">
+                <span class="icon">⚙️</span>
+                <span>Ayarlar</span>
+            </a>
+        </nav>
+        
+        <div class="sidebar-footer">
+            <button class="logout-button" id="logout-button">
+                <span class="icon">🚪</span>
+                <span>Çıkış Yap</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="main-header">
+            <h1>Dashboard</h1>
+            <div class="header-actions">
+                <button class="refresh-button" onclick="refreshData()">
+                    <span class="icon">🔄</span>
+                    Yenile
+                </button>
+                <div class="user-info">
+                    <span id="user-email">admin@soleportofino.com</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #4CAF50;">💰</div>
+                <div class="stat-content">
+                    <h3>Toplam Satış</h3>
+                    <p class="stat-value">₺<span id="total-sales">0</span></p>
+                    <p class="stat-change positive">+12% bu ay</p>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #2196F3;">📦</div>
+                <div class="stat-content">
+                    <h3>Toplam Sipariş</h3>
+                    <p class="stat-value" id="total-orders">0</p>
+                    <p class="stat-change positive">+8 yeni sipariş</p>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #FF9800;">👥</div>
+                <div class="stat-content">
+                    <h3>Müşteriler</h3>
+                    <p class="stat-value" id="total-customers">0</p>
+                    <p class="stat-change positive">+15 yeni müşteri</p>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #E91E63;">🛒</div>
+                <div class="stat-content">
+                    <h3>Dönüşüm Oranı</h3>
+                    <p class="stat-value"><span id="conversion-rate">0</span>%</p>
+                    <p class="stat-change positive">+2.5%</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="charts-section">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3>Satış Grafiği</h3>
+                    <select class="period-select" id="sales-period">
+                        <option value="week">Bu Hafta</option>
+                        <option value="month" selected>Bu Ay</option>
+                        <option value="year">Bu Yıl</option>
+                    </select>
+                </div>
+                <canvas id="salesChart"></canvas>
+            </div>
+            
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3>Trafik Kaynakları</h3>
+                </div>
+                <canvas id="trafficChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Recent Orders -->
+        <div class="table-section">
+            <div class="section-header">
+                <h3>Son Siparişler</h3>
+                <a href="orders.html" class="view-all">Tümünü Gör →</a>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Sipariş No</th>
+                            <th>Müşteri</th>
+                            <th>Ürün</th>
+                            <th>Tutar</th>
+                            <th>Durum</th>
+                            <th>Tarih</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recent-orders">
+                        <tr>
+                            <td colspan="7" class="loading">Yükleniyor...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Activity Feed -->
+        <div class="activity-section">
+            <h3>Son Aktiviteler</h3>
+            <div class="activity-feed" id="activity-feed">
+                <div class="activity-item">
+                    <span class="activity-icon">🛒</span>
+                    <div class="activity-content">
+                        <p><strong>Yeni sipariş</strong> - Ayşe Yılmaz</p>
+                        <span class="activity-time">5 dakika önce</span>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <span class="activity-icon">👤</span>
+                    <div class="activity-content">
+                        <p><strong>Yeni müşteri kaydı</strong> - Mehmet Öz</p>
+                        <span class="activity-time">1 saat önce</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modals -->
+    <div id="modal-container"></div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-admin.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>
