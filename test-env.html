@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Environment Test</title>
+</head>
+<body>
+    <h1>Environment Variable Test</h1>
+    <div id="results"></div>
+    
+    <script>
+        // This will be replaced by _worker.js
+        const SUPABASE_URL = '__SUPABASE_URL__';
+        const SUPABASE_ANON_KEY = '__SUPABASE_ANON_KEY__';
+        
+        const results = document.getElementById('results');
+        
+        results.innerHTML = `
+            <p><strong>SUPABASE_URL:</strong> ${SUPABASE_URL.includes('__') ? 'NOT SET' : 'SET ✓'}</p>
+            <p><strong>SUPABASE_ANON_KEY:</strong> ${SUPABASE_ANON_KEY.includes('__') ? 'NOT SET' : 'SET ✓'}</p>
+            <p><strong>URL Preview:</strong> ${SUPABASE_URL.substring(0, 40)}...</p>
+            <p><strong>Key Length:</strong> ${SUPABASE_ANON_KEY.length} characters</p>
+        `;
+        
+        if (!SUPABASE_URL.includes('__') && !SUPABASE_ANON_KEY.includes('__')) {
+            results.innerHTML += '<p style="color: green;"><strong>✓ Environment variables are properly injected!</strong></p>';
+        } else {
+            results.innerHTML += '<p style="color: red;"><strong>✗ Environment variables are NOT being injected!</strong></p>';
+        }
+    </script>
+</body>
+</html>

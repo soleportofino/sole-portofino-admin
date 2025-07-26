@@ -9,6 +9,10 @@ async function initializeSupabase() {
     const SUPABASE_URL = '__SUPABASE_URL__';
     const SUPABASE_ANON_KEY = '__SUPABASE_ANON_KEY__';
     
+    // Log for debugging (remove in production)
+    console.log('Supabase URL:', SUPABASE_URL.substring(0, 30) + '...');
+    console.log('Supabase Key exists:', SUPABASE_ANON_KEY.length > 0);
+    
     // Check if placeholders were replaced
     if (SUPABASE_URL.includes('__') || SUPABASE_ANON_KEY.includes('__')) {
         console.warn('Environment variables not set. Using demo mode.');
@@ -16,7 +20,22 @@ async function initializeSupabase() {
     }
     
     try {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // Create Supabase client with v2 configuration
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+            auth: {
+                autoRefreshToken: true,
+                persistSession: true,
+                detectSessionInUrl: false
+            }
+        });
+        
+        // Test connection
+        const { data, error } = await supabase.auth.getSession();
+        if (error && error.message.includes('NetworkError')) {
+            console.error('Network error connecting to Supabase');
+            return false;
+        }
+        
         return true;
     } catch (error) {
         console.error('Failed to initialize Supabase:', error);
@@ -95,13 +114,22 @@ async function handleLogin(e) {
             }
         }
         
+        // Log for debugging
+        console.log('Attempting login with email:', email);
+        
         // Attempt to sign in with Supabase
         const { data, error } = await supabase.auth.signInWithPassword({
             email: email,
             password: password
         });
         
-        if (error) throw error;
+        // Log the full error for debugging
+        if (error) {
+            console.error('Login error:', error);
+            console.error('Error status:', error.status);
+            console.error('Error message:', error.message);
+            throw error;
+        }
         
         // Store remember preference
         if (remember) {
@@ -127,12 +155,21 @@ async function handleLogin(e) {
 
 // Get user-friendly error message
 function getErrorMessage(error) {
-    if (error.message.includes('Invalid login credentials')) {
+    console.error('Full error object:', error);
+    
+    // Check for status code
+    if (error.status === 500) {
+        return 'Sunucu hatası (500). Lütfen birkaç dakika sonra tekrar deneyin veya Supabase ayarlarını kontrol edin.';
+    } else if (error.status === 400) {
+        return 'Geçersiz istek. E-posta ve şifrenizi kontrol edin.';
+    } else if (error.message && error.message.includes('Invalid login credentials')) {
         return 'E-posta veya şifre hatalı. Lütfen tekrar deneyin.';
-    } else if (error.message.includes('Email not confirmed')) {
+    } else if (error.message && error.message.includes('Email not confirmed')) {
         return 'E-posta adresinizi doğrulamanız gerekiyor.';
-    } else if (error.message.includes('Network')) {
+    } else if (error.message && error.message.includes('Network')) {
         return 'İnternet bağlantınızı kontrol edin.';
+    } else if (error.message) {
+        return `Hata: ${error.message}`;
     } else {
         return 'Bir hata oluştu. Lütfen tekrar deneyin.';
     }
