@@ -1,0 +1,105 @@
+// Sole Portofino Admin - Common Authentication Functions
+// This file contains shared authentication functionality used by both login and dashboard pages
+
+let supabase = null;
+
+// Global error handler to prevent page refresh on errors
+window.addEventListener('error', function(event) {
+    console.error('Global error caught:', event.error);
+    event.preventDefault();
+});
+
+window.addEventListener('unhandledrejection', function(event) {
+    console.error('Unhandled promise rejection:', event.reason);
+    event.preventDefault();
+});
+
+// Initialize Supabase with environment variables
+async function initializeSupabase() {
+    // For Cloudflare Pages, environment variables are injected at build time
+    // These placeholders will be replaced by Cloudflare
+    const SUPABASE_URL = '__SUPABASE_URL__';
+    const SUPABASE_ANON_KEY = '__SUPABASE_ANON_KEY__';
+    
+    // Log for debugging (remove in production)
+    console.log('Supabase URL:', SUPABASE_URL.substring(0, 30) + '...');
+    console.log('Supabase Key exists:', SUPABASE_ANON_KEY.length > 0);
+    
+    // Check if placeholders were replaced
+    if (SUPABASE_URL.includes('__') || SUPABASE_ANON_KEY.includes('__')) {
+        console.warn('Environment variables not set. Using demo mode.');
+        return false;
+    }
+    
+    try {
+        // Create Supabase client with v2 configuration
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+            auth: {
+                autoRefreshToken: true,
+                persistSession: true,
+                detectSessionInUrl: false
+            }
+        });
+        
+        // Test connection
+        const { data, error } = await supabase.auth.getSession();
+        if (error && error.message.includes('NetworkError')) {
+            console.error('Network error connecting to Supabase');
+            return false;
+        }
+        
+        return true;
+    } catch (error) {
+        console.error('Failed to initialize Supabase:', error);
+        return false;
+    }
+}
+
+// Get user-friendly error message
+function getErrorMessage(error) {
+    console.error('Full error object:', error);
+    
+    // Check for status code
+    if (error.status === 500) {
+        return 'Sunucu hatası (500). Lütfen birkaç dakika sonra tekrar deneyin veya Supabase ayarlarını kontrol edin.';
+    } else if (error.status === 400) {
+        return 'Geçersiz istek. E-posta ve şifrenizi kontrol edin.';
+    } else if (error.message && error.message.includes('Invalid login credentials')) {
+        return 'E-posta veya şifre hatalı. Lütfen tekrar deneyin.';
+    } else if (error.message && error.message.includes('Email not confirmed')) {
+        return 'E-posta adresinizi doğrulamanız gerekiyor.';
+    } else if (error.message && error.message.includes('Network')) {
+        return 'İnternet bağlantınızı kontrol edin.';
+    } else if (error.message) {
+        return `Hata: ${error.message}`;
+    } else {
+        return 'Bir hata oluştu. Lütfen tekrar deneyin.';
+    }
+}
+
+// Export for use in other files
+window.supabaseAuth = {
+    getSupabase: () => supabase,
+    isAuthenticated: async () => {
+        if (!supabase) {
+            return localStorage.getItem('isLoggedIn') === 'true';
+        }
+        const { data: { session } } = await supabase.auth.getSession();
+        return !!session;
+    },
+    logout: async () => {
+        if (supabase) {
+            await supabase.auth.signOut();
+        }
+        localStorage.removeItem('isLoggedIn');
+        localStorage.removeItem('userEmail');
+        window.location.href = 'index.html';
+    },
+    initialize: initializeSupabase,
+    getErrorMessage: getErrorMessage
+};
+
+// Initialize Supabase when this script loads
+(async function() {
+    await initializeSupabase();
+})();
