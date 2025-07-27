@@ -69,6 +69,8 @@ async function checkAuth() {
         const isDashboardPage = currentFile.includes('dashboard') || currentPage.includes('dashboard');
         
         console.log('CheckAuth - Current page:', currentPage);
+        console.log('CheckAuth - Current file:', currentFile);
+        console.log('CheckAuth - Full URL:', window.location.href);
         console.log('Is login page:', isLoginPage);
         console.log('Is dashboard page:', isDashboardPage);
         
@@ -109,18 +111,20 @@ async function checkAuth() {
 document.addEventListener('DOMContentLoaded', async function() {
     const isSupabaseReady = await initializeSupabase();
     
-    checkAuth();
-    
-    // Handle login form submission
+    // Only run checkAuth on login page
     const loginForm = document.getElementById('login-form');
     if (loginForm) {
+        // We're on the login page
+        checkAuth();
         loginForm.addEventListener('submit', handleLogin);
+        
+        // Show demo login if Supabase is not configured
+        if (!isSupabaseReady) {
+            addDemoLoginButton();
+        }
     }
     
-    // Show demo login if Supabase is not configured
-    if (!isSupabaseReady) {
-        addDemoLoginButton();
-    }
+    // For dashboard page, let dashboard.js handle its own auth
 });
 
 // Handle login
