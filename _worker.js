@@ -6,7 +6,8 @@ export default {
     const url = new URL(request.url);
     
     // Handle JavaScript files to inject environment variables
-    if (url.pathname.endsWith('.js')) {
+    // IMPORTANT: Skip functions directory to avoid breaking JSON responses
+    if (url.pathname.endsWith('.js') && !url.pathname.includes('/functions/')) {
       const response = await env.ASSETS.fetch(request);
       let content = await response.text();
       
