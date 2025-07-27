@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Environment Variables Test</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .test-section {
+            background: #2a2a2a;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border: 1px solid #444;
+        }
+        .success {
+            color: #4CAF50;
+        }
+        .error {
+            color: #f44336;
+        }
+        .info {
+            color: #2196F3;
+        }
+        .warning {
+            color: #ff9800;
+        }
+        pre {
+            background: #000;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        button {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #1976D2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Environment Variables Test Page</h1>
+    
+    <div class="test-section">
+        <h2>Test Controls</h2>
+        <button onclick="runAllTests()">🔄 Run All Tests</button>
+        <button onclick="clearCache()">🗑️ Clear Cache</button>
+        <button onclick="window.location.href='?debug=true'">🐛 Enable Debug Mode</button>
+    </div>
+
+    <div class="test-section">
+        <h2>1. Placeholder Check (_worker.js)</h2>
+        <div id="placeholder-test">
+            <p>Checking if _worker.js replaced placeholders...</p>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Window Variables Check</h2>
+        <div id="window-test">
+            <p>Checking window.INJECTED_* variables...</p>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Functions Endpoint Check</h2>
+        <div id="function-test">
+            <p>Testing /functions/env endpoint...</p>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. LocalStorage Check</h2>
+        <div id="storage-test">
+            <p>Checking localStorage cache...</p>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>5. Supabase Connection Test</h2>
+        <div id="supabase-test">
+            <p>Testing Supabase client connection...</p>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Console Output</h2>
+        <pre id="console-output"></pre>
+    </div>
+
+    <script>
+        // Override console.log to display in page
+        const originalLog = console.log;
+        const originalError = console.error;
+        const consoleOutput = document.getElementById('console-output');
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            const message = args.map(arg => 
+                typeof arg === 'object' ? JSON.stringify(arg, null, 2) : arg
+            ).join(' ');
+            consoleOutput.innerHTML += `<span class="info">[LOG]</span> ${message}\n`;
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            const message = args.map(arg => 
+                typeof arg === 'object' ? JSON.stringify(arg, null, 2) : arg
+            ).join(' ');
+            consoleOutput.innerHTML += `<span class="error">[ERROR]</span> ${message}\n`;
+        };
+
+        // Test functions
+        async function testPlaceholders() {
+            const container = document.getElementById('placeholder-test');
+            container.innerHTML = '<h3>Testing placeholders...</h3>';
+            
+            const SUPABASE_URL = '__SUPABASE_URL__';
+            const SUPABASE_ANON_KEY = '__SUPABASE_ANON_KEY__';
+            
+            const urlReplaced = SUPABASE_URL !== '__SUPABASE_URL__';
+            const keyReplaced = SUPABASE_ANON_KEY !== '__SUPABASE_ANON_KEY__';
+            
+            if (urlReplaced && keyReplaced) {
+                container.innerHTML += `<p class="success">✅ Placeholders replaced successfully!</p>`;
+                container.innerHTML += `<p>URL: ${SUPABASE_URL}</p>`;
+                container.innerHTML += `<p>Key: ${SUPABASE_ANON_KEY.substring(0, 20)}...</p>`;
+            } else {
+                container.innerHTML += `<p class="error">❌ Placeholders NOT replaced</p>`;
+                container.innerHTML += `<p>URL placeholder: ${SUPABASE_URL}</p>`;
+                container.innerHTML += `<p>Key placeholder: ${SUPABASE_ANON_KEY}</p>`;
+            }
+        }
+
+        async function testWindowVariables() {
+            const container = document.getElementById('window-test');
+            container.innerHTML = '<h3>Testing window variables...</h3>';
+            
+            if (window.INJECTED_SUPABASE_URL && window.INJECTED_SUPABASE_ANON_KEY) {
+                container.innerHTML += `<p class="success">✅ Window variables found!</p>`;
+                container.innerHTML += `<p>URL: ${window.INJECTED_SUPABASE_URL}</p>`;
+                container.innerHTML += `<p>Key: ${window.INJECTED_SUPABASE_ANON_KEY.substring(0, 20)}...</p>`;
+            } else {
+                container.innerHTML += `<p class="error">❌ Window variables NOT found</p>`;
+                container.innerHTML += `<p>window.INJECTED_SUPABASE_URL: ${window.INJECTED_SUPABASE_URL || 'undefined'}</p>`;
+                container.innerHTML += `<p>window.INJECTED_SUPABASE_ANON_KEY: ${window.INJECTED_SUPABASE_ANON_KEY || 'undefined'}</p>`;
+            }
+        }
+
+        async function testFunctionEndpoint() {
+            const container = document.getElementById('function-test');
+            container.innerHTML = '<h3>Testing /functions/env endpoint...</h3>';
+            
+            try {
+                const response = await fetch('/functions/env', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                container.innerHTML += `<p>Response status: ${response.status} ${response.statusText}</p>`;
+                
+                const text = await response.text();
+                let data;
+                
+                try {
+                    data = JSON.parse(text);
+                } catch (e) {
+                    container.innerHTML += `<p class="error">❌ Invalid JSON response</p>`;
+                    container.innerHTML += `<pre>${text}</pre>`;
+                    return;
+                }
+                
+                if (response.ok && data.SUPABASE_URL && data.SUPABASE_ANON_KEY) {
+                    container.innerHTML += `<p class="success">✅ Function endpoint working!</p>`;
+                    container.innerHTML += `<p>URL: ${data.SUPABASE_URL}</p>`;
+                    container.innerHTML += `<p>Key: ${data.SUPABASE_ANON_KEY.substring(0, 20)}...</p>`;
+                } else {
+                    container.innerHTML += `<p class="error">❌ Function endpoint failed</p>`;
+                    container.innerHTML += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                }
+            } catch (error) {
+                container.innerHTML += `<p class="error">❌ Function endpoint error: ${error.message}</p>`;
+            }
+        }
+
+        async function testLocalStorage() {
+            const container = document.getElementById('storage-test');
+            container.innerHTML = '<h3>Testing localStorage...</h3>';
+            
+            const url = localStorage.getItem('SUPABASE_URL');
+            const key = localStorage.getItem('SUPABASE_ANON_KEY');
+            
+            if (url && key) {
+                container.innerHTML += `<p class="warning">⚠️ Found cached values (development only)</p>`;
+                container.innerHTML += `<p>URL: ${url}</p>`;
+                container.innerHTML += `<p>Key: ${key.substring(0, 20)}...</p>`;
+            } else {
+                container.innerHTML += `<p class="info">ℹ️ No cached values</p>`;
+            }
+        }
+
+        async function testSupabaseConnection() {
+            const container = document.getElementById('supabase-test');
+            container.innerHTML = '<h3>Loading Supabase scripts...</h3>';
+            
+            // Load scripts
+            await loadScript('supabase-config.js');
+            await loadScript('supabase-only-auth.js');
+            
+            container.innerHTML += '<p>Initializing Supabase...</p>';
+            
+            try {
+                if (window.initializeSupabaseConfig) {
+                    await window.initializeSupabaseConfig();
+                    
+                    if (window.SUPABASE_CONFIG.initialized) {
+                        container.innerHTML += `<p class="success">✅ Supabase initialized successfully!</p>`;
+                        
+                        // Test connection
+                        const client = window.SUPABASE_CONFIG.client;
+                        const { data, error } = await client.auth.getSession();
+                        
+                        if (error) {
+                            container.innerHTML += `<p class="warning">⚠️ No active session: ${error.message}</p>`;
+                        } else {
+                            container.innerHTML += `<p class="info">ℹ️ Session status: ${data.session ? 'Active' : 'No session'}</p>`;
+                        }
+                    } else {
+                        container.innerHTML += `<p class="error">❌ Supabase initialization failed</p>`;
+                        if (window.SUPABASE_CONFIG.error) {
+                            container.innerHTML += `<pre>${window.SUPABASE_CONFIG.error.message}</pre>`;
+                        }
+                    }
+                } else {
+                    container.innerHTML += `<p class="error">❌ Supabase config script not loaded</p>`;
+                }
+            } catch (error) {
+                container.innerHTML += `<p class="error">❌ Error: ${error.message}</p>`;
+            }
+        }
+
+        function loadScript(src) {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = src;
+                script.onload = resolve;
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        }
+
+        async function runAllTests() {
+            consoleOutput.innerHTML = '';
+            console.log('Starting all tests...');
+            
+            await testPlaceholders();
+            await testWindowVariables();
+            await testFunctionEndpoint();
+            await testLocalStorage();
+            await testSupabaseConnection();
+            
+            console.log('All tests completed!');
+        }
+
+        function clearCache() {
+            localStorage.removeItem('SUPABASE_URL');
+            localStorage.removeItem('SUPABASE_ANON_KEY');
+            alert('Cache cleared! Refresh the page to test again.');
+        }
+
+        // Run tests on load
+        window.addEventListener('load', () => {
+            setTimeout(runAllTests, 1000);
+        });
+    </script>
+</body>
+</html>

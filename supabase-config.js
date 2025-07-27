@@ -1,6 +1,10 @@
 // Supabase Configuration and Environment Setup
 // This file handles environment variable fetching and Supabase client initialization
 
+// Placeholders for _worker.js injection
+const SUPABASE_URL_PLACEHOLDER = '__SUPABASE_URL__';
+const SUPABASE_ANON_KEY_PLACEHOLDER = '__SUPABASE_ANON_KEY__';
+
 // Global variables
 window.SUPABASE_CONFIG = {
     url: null,
@@ -9,6 +13,10 @@ window.SUPABASE_CONFIG = {
     initialized: false,
     error: null
 };
+
+// Check if debug mode is enabled
+const urlParams = new URLSearchParams(window.location.search);
+const DEBUG_MODE = urlParams.get('debug') === 'true' || urlParams.get('test') === 'true';
 
 // Debug logging
 function log(...args) {
@@ -19,68 +27,118 @@ function logError(...args) {
     console.error('[Supabase Config Error]', ...args);
 }
 
+function debugLog(...args) {
+    if (DEBUG_MODE) {
+        console.log('[DEBUG]', ...args);
+    }
+}
+
 // Fetch environment variables from Cloudflare Functions endpoint
 async function fetchEnvironmentVariables() {
     log('Fetching environment variables...');
     
+    // Method 1: Check if _worker.js has replaced the placeholders
+    debugLog('Checking placeholders:', {
+        url: SUPABASE_URL_PLACEHOLDER,
+        key: SUPABASE_ANON_KEY_PLACEHOLDER.substring(0, 20) + '...',
+        urlReplaced: SUPABASE_URL_PLACEHOLDER !== '__SUPABASE_URL__',
+        keyReplaced: SUPABASE_ANON_KEY_PLACEHOLDER !== '__SUPABASE_ANON_KEY__'
+    });
+    
+    if (SUPABASE_URL_PLACEHOLDER !== '__SUPABASE_URL__' && 
+        SUPABASE_ANON_KEY_PLACEHOLDER !== '__SUPABASE_ANON_KEY__') {
+        log('✅ Using _worker.js injected placeholders');
+        return {
+            url: SUPABASE_URL_PLACEHOLDER,
+            anonKey: SUPABASE_ANON_KEY_PLACEHOLDER
+        };
+    }
+    
+    // Method 2: Check window.INJECTED_* variables
+    if (window.INJECTED_SUPABASE_URL && window.INJECTED_SUPABASE_ANON_KEY) {
+        debugLog('Found window.INJECTED variables:', {
+            url: window.INJECTED_SUPABASE_URL,
+            key: window.INJECTED_SUPABASE_ANON_KEY.substring(0, 20) + '...'
+        });
+        log('✅ Using window.INJECTED environment variables');
+        return {
+            url: window.INJECTED_SUPABASE_URL,
+            anonKey: window.INJECTED_SUPABASE_ANON_KEY
+        };
+    }
+    
+    // Method 3: Try Cloudflare Functions endpoint
     try {
-        const response = await fetch('/functions/env.js', {
+        // Fix: Use /functions/env instead of /functions/env.js
+        const functionUrl = '/functions/env';
+        debugLog('Fetching from:', functionUrl);
+        
+        const response = await fetch(functionUrl, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json'
             }
         });
 
+        debugLog('Function response:', {
+            status: response.status,
+            statusText: response.statusText,
+            headers: Object.fromEntries(response.headers.entries())
+        });
+
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            throw new Error(`HTTP error! status: ${response.status} ${response.statusText}`);
         }
 
         const env = await response.json();
+        debugLog('Function returned:', {
+            hasUrl: !!env.SUPABASE_URL,
+            hasKey: !!env.SUPABASE_ANON_KEY
+        });
         
         if (!env.SUPABASE_URL || !env.SUPABASE_ANON_KEY) {
-            throw new Error('Missing required environment variables');
+            throw new Error('Missing required environment variables in function response');
         }
 
         // Validate Supabase URL format
         if (!env.SUPABASE_URL.includes('supabase.co')) {
-            throw new Error('Invalid Supabase URL format');
+            throw new Error('Invalid Supabase URL format from function');
         }
 
-        log('✅ Environment variables fetched successfully');
+        log('✅ Environment variables fetched from function successfully');
         return {
             url: env.SUPABASE_URL,
             anonKey: env.SUPABASE_ANON_KEY
         };
     } catch (error) {
-        logError('Failed to fetch environment variables:', error);
-        
-        // Try to get from injected placeholders (for _worker.js)
-        const placeholderUrl = '__SUPABASE_URL__';
-        const placeholderKey = '__SUPABASE_ANON_KEY__';
-        
-        // Check if _worker.js has replaced the placeholders
-        if (window.INJECTED_SUPABASE_URL && window.INJECTED_SUPABASE_URL !== placeholderUrl) {
-            log('Using injected environment variables');
-            return {
-                url: window.INJECTED_SUPABASE_URL,
-                anonKey: window.INJECTED_SUPABASE_ANON_KEY
-            };
-        }
-
-        // Check localStorage cache (for development)
-        const cachedUrl = localStorage.getItem('SUPABASE_URL');
-        const cachedKey = localStorage.getItem('SUPABASE_ANON_KEY');
-        
-        if (cachedUrl && cachedKey && cachedUrl.includes('supabase.co')) {
-            log('Using cached environment variables');
-            return {
-                url: cachedUrl,
-                anonKey: cachedKey
-            };
-        }
-
-        throw error;
+        logError('Failed to fetch from function:', error);
     }
+
+    // Method 4: Check localStorage cache (for development)
+    const cachedUrl = localStorage.getItem('SUPABASE_URL');
+    const cachedKey = localStorage.getItem('SUPABASE_ANON_KEY');
+    
+    if (cachedUrl && cachedKey && cachedUrl.includes('supabase.co')) {
+        log('✅ Using cached environment variables from localStorage');
+        return {
+            url: cachedUrl,
+            anonKey: cachedKey
+        };
+    }
+
+    // If all methods fail, throw error
+    throw new Error(`
+No environment variables found. Tried:
+1. _worker.js placeholders: Not replaced
+2. window.INJECTED variables: Not found
+3. /functions/env endpoint: Failed
+4. localStorage cache: Not found
+
+Please check:
+- Cloudflare Pages environment variables are set
+- Build has been deployed after setting variables
+- _worker.js is properly configured
+    `.trim());
 }
 
 // Prompt user for manual configuration
@@ -93,12 +151,16 @@ Lütfen Supabase projenizin bilgilerini girin:
 2. Settings > API bölümüne gidin
 3. URL ve anon key değerlerini kopyalayın
 
+Cloudflare Pages'de environment variable'ları kontrol edin:
+- SUPABASE_URL (Plaintext)
+- SUPABASE_ANON_KEY (Plaintext, Secret DEĞİL)
+
 Devam etmek için Tamam'a basın.
     `.trim();
 
     alert(message);
 
-    const url = prompt('Supabase URL (örn: https://xxxxx.supabase.co):');
+    const url = prompt('Supabase URL (örn: https://xxxxx.supabase.co):', 'https://npfwslczctdocnkyntpf.supabase.co');
     const anonKey = prompt('Supabase Anon Key:');
 
     if (!url || !anonKey) {
@@ -147,6 +209,10 @@ async function initializeSupabase(config) {
     }
 
     log('Creating Supabase client...');
+    debugLog('Using config:', {
+        url: config.url,
+        keyLength: config.anonKey.length
+    });
     
     const client = window.supabase.createClient(config.url, config.anonKey, {
         auth: {
@@ -187,7 +253,11 @@ async function initializeSupabaseConfig() {
         try {
             config = await fetchEnvironmentVariables();
         } catch (fetchError) {
-            logError('Environment fetch failed, prompting for manual config...');
+            logError('Environment fetch failed:', fetchError.message);
+            if (DEBUG_MODE) {
+                console.error('Full error:', fetchError);
+            }
+            log('Prompting for manual configuration...');
             config = await promptForConfiguration();
         }
 
@@ -204,6 +274,26 @@ async function initializeSupabaseConfig() {
         };
 
         log('✅ Supabase configuration complete');
+        
+        // Show success in debug mode
+        if (DEBUG_MODE) {
+            const successDiv = document.createElement('div');
+            successDiv.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background: #4CAF50;
+                color: white;
+                padding: 15px 20px;
+                border-radius: 4px;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+                z-index: 10000;
+            `;
+            successDiv.innerHTML = '✅ Supabase initialized successfully';
+            document.body.appendChild(successDiv);
+            setTimeout(() => successDiv.remove(), 3000);
+        }
+        
         return client;
 
     } catch (error) {
@@ -229,6 +319,7 @@ async function initializeSupabaseConfig() {
             <strong>⚠️ Supabase Bağlantı Hatası</strong><br>
             ${error.message}<br>
             <small style="opacity: 0.8">Detaylar için konsolu kontrol edin</small>
+            ${DEBUG_MODE ? '<br><small>Debug mode aktif</small>' : ''}
         `;
         document.body.appendChild(errorDiv);
         
