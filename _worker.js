@@ -11,11 +11,17 @@ export default {
       let content = await response.text();
       
       // Replace placeholders with actual environment variables
-      if (env.SUPABASE_URL) {
+      if (env.SUPABASE_URL && env.SUPABASE_ANON_KEY) {
         content = content.replace(/__SUPABASE_URL__/g, env.SUPABASE_URL);
-      }
-      if (env.SUPABASE_ANON_KEY) {
         content = content.replace(/__SUPABASE_ANON_KEY__/g, env.SUPABASE_ANON_KEY);
+        
+        // Also inject as window variables at the beginning of the file
+        const injection = `
+// Injected by Cloudflare Worker
+window.INJECTED_SUPABASE_URL = '${env.SUPABASE_URL}';
+window.INJECTED_SUPABASE_ANON_KEY = '${env.SUPABASE_ANON_KEY}';
+`;
+        content = injection + content;
       }
       
       return new Response(content, {

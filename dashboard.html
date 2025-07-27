@@ -188,16 +188,20 @@
     <div id="modal-container"></div>
 
     <!-- Scripts -->
-    <script src="simple-auth.js"></script>
+    <script src="supabase-config.js"></script>
+    <script src="supabase-only-auth.js"></script>
+    <script src="auth-guard.js"></script>
     <script>
-        // Add logout functionality
-        document.getElementById('logout-button').addEventListener('click', logout);
-        
-        // Mock data for demo
-        document.getElementById('total-sales').textContent = '125,450';
-        document.getElementById('total-orders').textContent = '342';
-        document.getElementById('total-customers').textContent = '1,234';
-        document.getElementById('new-orders-count').textContent = '5';
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Auth guard will handle authentication automatically
+            
+            // Mock data for demo
+            document.getElementById('total-sales').textContent = '125,450';
+            document.getElementById('total-orders').textContent = '342';
+            document.getElementById('total-customers').textContent = '1,234';
+            document.getElementById('new-orders-count').textContent = '5';
+        });
         
         function refreshData() {
             alert('Veriler yenilendi!');

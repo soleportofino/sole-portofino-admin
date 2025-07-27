@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sole Portofino - Ayarlar</title>
+    <link rel="stylesheet" href="css/admin.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h2>SOLE PORTOFINO</h2>
+            <span class="admin-badge">Admin</span>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="nav-item">
+                <span class="icon">📊</span>
+                <span>Dashboard</span>
+            </a>
+            <a href="orders.html" class="nav-item">
+                <span class="icon">📦</span>
+                <span>Siparişler</span>
+                <span class="badge" id="new-orders-count">0</span>
+            </a>
+            <a href="products.html" class="nav-item">
+                <span class="icon">👜</span>
+                <span>Ürün Yönetimi</span>
+            </a>
+            <a href="customers.html" class="nav-item">
+                <span class="icon">👥</span>
+                <span>Müşteriler</span>
+            </a>
+            <a href="analytics.html" class="nav-item">
+                <span class="icon">📈</span>
+                <span>Analizler</span>
+            </a>
+            <a href="returns.html" class="nav-item">
+                <span class="icon">↩️</span>
+                <span>İadeler</span>
+            </a>
+            <a href="settings.html" class="nav-item active">
+                <span class="icon">⚙️</span>
+                <span>Ayarlar</span>
+            </a>
+        </nav>
+        
+        <div class="sidebar-footer">
+            <button class="logout-button" id="logout-button">
+                <span class="icon">🚪</span>
+                <span>Çıkış Yap</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="main-header">
+            <h1>Ayarlar</h1>
+            <div class="header-actions">
+                <button class="btn-primary" onclick="saveSettings()">
+                    <span class="icon">💾</span>
+                    Değişiklikleri Kaydet
+                </button>
+                <div class="user-info">
+                    <span id="user-email">admin@soleportofino.com</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Settings Tabs -->
+        <div class="settings-tabs">
+            <button class="tab-button active" onclick="showTab('general')">Genel</button>
+            <button class="tab-button" onclick="showTab('store')">Mağaza</button>
+            <button class="tab-button" onclick="showTab('payment')">Ödeme</button>
+            <button class="tab-button" onclick="showTab('shipping')">Kargo</button>
+            <button class="tab-button" onclick="showTab('notifications')">Bildirimler</button>
+            <button class="tab-button" onclick="showTab('security')">Güvenlik</button>
+        </div>
+
+        <!-- Settings Content -->
+        <div class="settings-content">
+            <!-- General Settings -->
+            <div id="general-tab" class="settings-tab active">
+                <div class="settings-section">
+                    <h3>Site Bilgileri</h3>
+                    <div class="form-group">
+                        <label>Site Adı</label>
+                        <input type="text" value="Sole Portofino" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Site URL</label>
+                        <input type="url" value="https://www.soleportofino.com" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Site Açıklaması</label>
+                        <textarea rows="3" class="form-control">İtalyan modasının en seçkin ürünlerini sunan premium mağaza</textarea>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3>İletişim Bilgileri</h3>
+                    <div class="form-group">
+                        <label>E-posta</label>
+                        <input type="email" value="info@soleportofino.com" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Telefon</label>
+                        <input type="tel" value="+90 212 123 45 67" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Adres</label>
+                        <textarea rows="2" class="form-control">Nişantaşı, Abdi İpekçi Cad. No:123, İstanbul</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Store Settings -->
+            <div id="store-tab" class="settings-tab" style="display: none;">
+                <div class="settings-section">
+                    <h3>Mağaza Ayarları</h3>
+                    <div class="form-group">
+                        <label>Para Birimi</label>
+                        <select class="form-control">
+                            <option value="TRY" selected>Türk Lirası (₺)</option>
+                            <option value="USD">US Dollar ($)</option>
+                            <option value="EUR">Euro (€)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Varsayılan Dil</label>
+                        <select class="form-control">
+                            <option value="tr" selected>Türkçe</option>
+                            <option value="en">English</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" checked> Stok takibi etkin
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" checked> Misafir alışverişine izin ver
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Settings -->
+            <div id="payment-tab" class="settings-tab" style="display: none;">
+                <div class="settings-section">
+                    <h3>Ödeme Yöntemleri</h3>
+                    <div class="payment-method">
+                        <label class="switch-label">
+                            <input type="checkbox" checked>
+                            <span class="switch"></span>
+                            <span>Kredi Kartı</span>
+                        </label>
+                        <button class="btn-sm" onclick="configurePayment('credit-card')">Yapılandır</button>
+                    </div>
+                    <div class="payment-method">
+                        <label class="switch-label">
+                            <input type="checkbox" checked>
+                            <span class="switch"></span>
+                            <span>Havale/EFT</span>
+                        </label>
+                        <button class="btn-sm" onclick="configurePayment('bank-transfer')">Yapılandır</button>
+                    </div>
+                    <div class="payment-method">
+                        <label class="switch-label">
+                            <input type="checkbox">
+                            <span class="switch"></span>
+                            <span>Kapıda Ödeme</span>
+                        </label>
+                        <button class="btn-sm" onclick="configurePayment('cash-on-delivery')">Yapılandır</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shipping Settings -->
+            <div id="shipping-tab" class="settings-tab" style="display: none;">
+                <div class="settings-section">
+                    <h3>Kargo Ayarları</h3>
+                    <div class="form-group">
+                        <label>Ücretsiz Kargo Limiti</label>
+                        <input type="number" value="500" class="form-control" min="0">
+                        <small>0 girin sınır olmaması için</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Standart Kargo Ücreti</label>
+                        <input type="number" value="29.90" class="form-control" min="0" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label>Kargo Firmaları</label>
+                        <div class="checkbox-group">
+                            <label><input type="checkbox" checked> Aras Kargo</label>
+                            <label><input type="checkbox" checked> MNG Kargo</label>
+                            <label><input type="checkbox"> Yurtiçi Kargo</label>
+                            <label><input type="checkbox"> PTT Kargo</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notification Settings -->
+            <div id="notifications-tab" class="settings-tab" style="display: none;">
+                <div class="settings-section">
+                    <h3>E-posta Bildirimleri</h3>
+                    <div class="notification-item">
+                        <label class="switch-label">
+                            <input type="checkbox" checked>
+                            <span class="switch"></span>
+                            <span>Yeni sipariş bildirimi</span>
+                        </label>
+                    </div>
+                    <div class="notification-item">
+                        <label class="switch-label">
+                            <input type="checkbox" checked>
+                            <span class="switch"></span>
+                            <span>Stok azaldı bildirimi</span>
+                        </label>
+                    </div>
+                    <div class="notification-item">
+                        <label class="switch-label">
+                            <input type="checkbox">
+                            <span class="switch"></span>
+                            <span>Günlük rapor</span>
+                        </label>
+                    </div>
+                    <div class="notification-item">
+                        <label class="switch-label">
+                            <input type="checkbox" checked>
+                            <span class="switch"></span>
+                            <span>İade talepleri</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Security Settings -->
+            <div id="security-tab" class="settings-tab" style="display: none;">
+                <div class="settings-section">
+                    <h3>Güvenlik Ayarları</h3>
+                    <div class="form-group">
+                        <label>Mevcut Şifre</label>
+                        <input type="password" class="form-control" autocomplete="current-password">
+                    </div>
+                    <div class="form-group">
+                        <label>Yeni Şifre</label>
+                        <input type="password" class="form-control" autocomplete="new-password">
+                    </div>
+                    <div class="form-group">
+                        <label>Yeni Şifre (Tekrar)</label>
+                        <input type="password" class="form-control" autocomplete="new-password">
+                    </div>
+                    <button class="btn-primary" onclick="changePassword()">Şifreyi Değiştir</button>
+                </div>
+
+                <div class="settings-section">
+                    <h3>İki Faktörlü Doğrulama</h3>
+                    <p>Hesabınızın güvenliğini artırmak için iki faktörlü doğrulamayı etkinleştirin.</p>
+                    <button class="btn-secondary" onclick="enable2FA()">2FA'yı Etkinleştir</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="supabase-config.js"></script>
+    <script src="supabase-only-auth.js"></script>
+    <script src="auth-guard.js"></script>
+    <script>
+        // Initialize auth check on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Auth guard will handle authentication automatically
+        });
+
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.settings-tab').forEach(tab => {
+                tab.style.display = 'none';
+            });
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(tabName + '-tab').style.display = 'block';
+            event.target.classList.add('active');
+        }
+
+        function saveSettings() {
+            alert('Ayarlar kaydedildi!');
+        }
+
+        function configurePayment(method) {
+            alert('Ödeme yöntemi yapılandırılıyor: ' + method);
+        }
+
+        function changePassword() {
+            alert('Şifre değiştirme işlemi başlatılıyor...');
+        }
+
+        function enable2FA() {
+            alert('İki faktörlü doğrulama etkinleştiriliyor...');
+        }
+    </script>
+</body>
+</html>

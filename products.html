@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sole Portofino - Ürün Yönetimi</title>
+    <link rel="stylesheet" href="css/admin.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h2>SOLE PORTOFINO</h2>
+            <span class="admin-badge">Admin</span>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="nav-item">
+                <span class="icon">📊</span>
+                <span>Dashboard</span>
+            </a>
+            <a href="orders.html" class="nav-item">
+                <span class="icon">📦</span>
+                <span>Siparişler</span>
+                <span class="badge" id="new-orders-count">0</span>
+            </a>
+            <a href="products.html" class="nav-item active">
+                <span class="icon">👜</span>
+                <span>Ürün Yönetimi</span>
+            </a>
+            <a href="customers.html" class="nav-item">
+                <span class="icon">👥</span>
+                <span>Müşteriler</span>
+            </a>
+            <a href="analytics.html" class="nav-item">
+                <span class="icon">📈</span>
+                <span>Analizler</span>
+            </a>
+            <a href="returns.html" class="nav-item">
+                <span class="icon">↩️</span>
+                <span>İadeler</span>
+            </a>
+            <a href="settings.html" class="nav-item">
+                <span class="icon">⚙️</span>
+                <span>Ayarlar</span>
+            </a>
+        </nav>
+        
+        <div class="sidebar-footer">
+            <button class="logout-button" id="logout-button">
+                <span class="icon">🚪</span>
+                <span>Çıkış Yap</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="main-header">
+            <h1>Ürün Yönetimi</h1>
+            <div class="header-actions">
+                <button class="btn-primary" onclick="addNewProduct()">
+                    <span class="icon">➕</span>
+                    Yeni Ürün Ekle
+                </button>
+                <div class="user-info">
+                    <span id="user-email">admin@soleportofino.com</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Stats -->
+        <div class="product-stats">
+            <div class="stat-mini">
+                <span class="stat-label">Toplam Ürün</span>
+                <span class="stat-value" id="total-products">0</span>
+            </div>
+            <div class="stat-mini">
+                <span class="stat-label">Aktif Ürün</span>
+                <span class="stat-value" id="active-products">0</span>
+            </div>
+            <div class="stat-mini">
+                <span class="stat-label">Stokta Yok</span>
+                <span class="stat-value" id="out-of-stock">0</span>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters-section">
+            <div class="filter-group">
+                <label>Kategori</label>
+                <select id="category-filter" class="filter-select">
+                    <option value="">Tüm Kategoriler</option>
+                    <option value="shirts">Gömlekler</option>
+                    <option value="pants">Pantolonlar</option>
+                    <option value="jackets">Ceketler</option>
+                    <option value="accessories">Aksesuarlar</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Durum</label>
+                <select id="status-filter" class="filter-select">
+                    <option value="">Tümü</option>
+                    <option value="active">Aktif</option>
+                    <option value="inactive">Pasif</option>
+                    <option value="out-of-stock">Stokta Yok</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Arama</label>
+                <input type="text" id="search-input" class="filter-input" placeholder="Ürün adı veya SKU...">
+            </div>
+        </div>
+
+        <!-- Products Grid -->
+        <div class="products-grid" id="products-grid">
+            <!-- Products will be loaded here -->
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination">
+            <button class="pagination-btn" onclick="previousPage()">←</button>
+            <span class="pagination-info">Sayfa <span id="current-page">1</span> / <span id="total-pages">1</span></span>
+            <button class="pagination-btn" onclick="nextPage()">→</button>
+        </div>
+    </main>
+
+    <!-- Product Modal -->
+    <div id="product-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">Ürün Ekle/Düzenle</h2>
+                <button class="modal-close" onclick="closeProductModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="product-form">
+                    <div class="form-group">
+                        <label>Ürün Adı</label>
+                        <input type="text" id="product-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>SKU</label>
+                        <input type="text" id="product-sku" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Kategori</label>
+                        <select id="product-category" required>
+                            <option value="">Seçiniz</option>
+                            <option value="shirts">Gömlekler</option>
+                            <option value="pants">Pantolonlar</option>
+                            <option value="jackets">Ceketler</option>
+                            <option value="accessories">Aksesuarlar</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Fiyat</label>
+                        <input type="number" id="product-price" min="0" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Stok</label>
+                        <input type="number" id="product-stock" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Açıklama</label>
+                        <textarea id="product-description" rows="4"></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn-secondary" onclick="closeProductModal()">İptal</button>
+                        <button type="submit" class="btn-primary">Kaydet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="supabase-config.js"></script>
+    <script src="supabase-only-auth.js"></script>
+    <script src="auth-guard.js"></script>
+    <script>
+        // Initialize auth check on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Auth guard will handle authentication automatically
+            
+            // Load products
+            loadProducts();
+            updateStats();
+        });
+
+        // Mock products data
+        const mockProducts = [
+            {
+                id: 1,
+                name: 'Premium Gömlek',
+                sku: 'SHR-001',
+                category: 'shirts',
+                price: 850,
+                stock: 25,
+                status: 'active',
+                image: 'https://via.placeholder.com/200'
+            },
+            {
+                id: 2,
+                name: 'Klasik Pantolon',
+                sku: 'PNT-001',
+                category: 'pants',
+                price: 1200,
+                stock: 0,
+                status: 'out-of-stock',
+                image: 'https://via.placeholder.com/200'
+            }
+        ];
+
+        function loadProducts() {
+            const grid = document.getElementById('products-grid');
+            grid.innerHTML = mockProducts.map(product => `
+                <div class="product-card">
+                    <img src="${product.image}" alt="${product.name}" class="product-image">
+                    <div class="product-info">
+                        <h3>${product.name}</h3>
+                        <p class="product-sku">SKU: ${product.sku}</p>
+                        <p class="product-price">₺${product.price}</p>
+                        <p class="product-stock ${product.stock === 0 ? 'out-of-stock' : ''}">
+                            Stok: ${product.stock}
+                        </p>
+                        <div class="product-actions">
+                            <button class="btn-sm" onclick="editProduct(${product.id})">Düzenle</button>
+                            <button class="btn-sm btn-danger" onclick="deleteProduct(${product.id})">Sil</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateStats() {
+            document.getElementById('total-products').textContent = mockProducts.length;
+            document.getElementById('active-products').textContent = mockProducts.filter(p => p.status === 'active').length;
+            document.getElementById('out-of-stock').textContent = mockProducts.filter(p => p.stock === 0).length;
+        }
+
+        function addNewProduct() {
+            document.getElementById('modal-title').textContent = 'Yeni Ürün Ekle';
+            document.getElementById('product-form').reset();
+            document.getElementById('product-modal').style.display = 'flex';
+        }
+
+        function editProduct(productId) {
+            const product = mockProducts.find(p => p.id === productId);
+            if (product) {
+                document.getElementById('modal-title').textContent = 'Ürün Düzenle';
+                document.getElementById('product-name').value = product.name;
+                document.getElementById('product-sku').value = product.sku;
+                document.getElementById('product-category').value = product.category;
+                document.getElementById('product-price').value = product.price;
+                document.getElementById('product-stock').value = product.stock;
+                document.getElementById('product-modal').style.display = 'flex';
+            }
+        }
+
+        function deleteProduct(productId) {
+            if (confirm('Bu ürünü silmek istediğinize emin misiniz?')) {
+                alert('Ürün silindi: ' + productId);
+                loadProducts();
+            }
+        }
+
+        function closeProductModal() {
+            document.getElementById('product-modal').style.display = 'none';
+        }
+
+        document.getElementById('product-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert('Ürün kaydedildi!');
+            closeProductModal();
+            loadProducts();
+        });
+
+        function previousPage() {
+            alert('Önceki sayfa');
+        }
+
+        function nextPage() {
+            alert('Sonraki sayfa');
+        }
+    </script>
+</body>
+</html>

@@ -23,7 +23,7 @@
                 
                 <div class="form-group">
                     <label for="password">Şifre</label>
-                    <input type="password" id="password" name="password" required placeholder="••••••••">
+                    <input type="password" id="password" name="password" required placeholder="••••••••" autocomplete="current-password">
                 </div>
                 
                 <div class="form-group remember-me">
@@ -50,19 +50,44 @@
         </div>
     </div>
 
-    <script src="simple-auth.js"></script>
+    <script src="supabase-config.js"></script>
+    <script src="supabase-only-auth.js"></script>
+    <script src="auth-guard.js"></script>
     <script>
-        document.getElementById('login-form').addEventListener('submit', function(e) {
+        // Handle login form submission
+        document.getElementById('login-form').addEventListener('submit', async function(e) {
             e.preventDefault();
-            document.querySelector('.button-text').style.display = 'none';
-            document.querySelector('.button-loading').style.display = 'inline-block';
-            document.getElementById('error-message').style.display = 'none';
             
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            // Use Supabase auth
+            if (window.supabaseAuth) {
+                await window.supabaseAuth.handleLogin(email, password);
+            } else {
+                // Show error if auth not loaded
+                const errorEl = document.getElementById('error-message');
+                errorEl.textContent = 'Sistem yükleniyor, lütfen tekrar deneyin...';
+                errorEl.style.display = 'block';
+                
+                // Retry initialization
+                setTimeout(async () => {
+                    await window.initializeSupabaseConfig();
+                }, 1000);
+            }
+        });
+        
+        // Show configuration status
+        window.addEventListener('load', () => {
             setTimeout(() => {
-                login();
-                document.querySelector('.button-text').style.display = 'inline';
-                document.querySelector('.button-loading').style.display = 'none';
-            }, 500);
+                if (window.SUPABASE_CONFIG) {
+                    if (window.SUPABASE_CONFIG.error) {
+                        console.error('⚠️ Supabase configuration error:', window.SUPABASE_CONFIG.error);
+                    } else if (window.SUPABASE_CONFIG.initialized) {
+                        console.log('✅ Supabase initialized successfully');
+                    }
+                }
+            }, 2000);
         });
     </script>
 </body>

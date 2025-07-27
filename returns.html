@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sole Portofino - İadeler</title>
+    <link rel="stylesheet" href="css/admin.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h2>SOLE PORTOFINO</h2>
+            <span class="admin-badge">Admin</span>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="nav-item">
+                <span class="icon">📊</span>
+                <span>Dashboard</span>
+            </a>
+            <a href="orders.html" class="nav-item">
+                <span class="icon">📦</span>
+                <span>Siparişler</span>
+                <span class="badge" id="new-orders-count">0</span>
+            </a>
+            <a href="products.html" class="nav-item">
+                <span class="icon">👜</span>
+                <span>Ürün Yönetimi</span>
+            </a>
+            <a href="customers.html" class="nav-item">
+                <span class="icon">👥</span>
+                <span>Müşteriler</span>
+            </a>
+            <a href="analytics.html" class="nav-item">
+                <span class="icon">📈</span>
+                <span>Analizler</span>
+            </a>
+            <a href="returns.html" class="nav-item active">
+                <span class="icon">↩️</span>
+                <span>İadeler</span>
+            </a>
+            <a href="settings.html" class="nav-item">
+                <span class="icon">⚙️</span>
+                <span>Ayarlar</span>
+            </a>
+        </nav>
+        
+        <div class="sidebar-footer">
+            <button class="logout-button" id="logout-button">
+                <span class="icon">🚪</span>
+                <span>Çıkış Yap</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="main-header">
+            <h1>İade Yönetimi</h1>
+            <div class="header-actions">
+                <button class="refresh-button" onclick="refreshReturns()">
+                    <span class="icon">🔄</span>
+                    Yenile
+                </button>
+                <div class="user-info">
+                    <span id="user-email">admin@soleportofino.com</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Return Stats -->
+        <div class="return-stats">
+            <div class="stat-mini">
+                <span class="stat-label">Bekleyen İadeler</span>
+                <span class="stat-value warning" id="pending-returns">8</span>
+            </div>
+            <div class="stat-mini">
+                <span class="stat-label">Onaylanan</span>
+                <span class="stat-value success" id="approved-returns">45</span>
+            </div>
+            <div class="stat-mini">
+                <span class="stat-label">Reddedilen</span>
+                <span class="stat-value danger" id="rejected-returns">12</span>
+            </div>
+            <div class="stat-mini">
+                <span class="stat-label">Toplam İade</span>
+                <span class="stat-value" id="total-returns">65</span>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters-section">
+            <div class="filter-group">
+                <label>Durum</label>
+                <select id="status-filter" class="filter-select">
+                    <option value="">Tümü</option>
+                    <option value="pending">Beklemede</option>
+                    <option value="approved">Onaylandı</option>
+                    <option value="rejected">Reddedildi</option>
+                    <option value="completed">Tamamlandı</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Sebep</label>
+                <select id="reason-filter" class="filter-select">
+                    <option value="">Tümü</option>
+                    <option value="defective">Defolu Ürün</option>
+                    <option value="wrong-size">Yanlış Beden</option>
+                    <option value="not-as-described">Açıklamaya Uymuyor</option>
+                    <option value="other">Diğer</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Tarih</label>
+                <select id="date-filter" class="filter-select">
+                    <option value="week" selected>Bu Hafta</option>
+                    <option value="month">Bu Ay</option>
+                    <option value="all">Tümü</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Returns Table -->
+        <div class="table-section">
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>İade No</th>
+                            <th>Sipariş No</th>
+                            <th>Müşteri</th>
+                            <th>Ürün</th>
+                            <th>Sebep</th>
+                            <th>Tutar</th>
+                            <th>Talep Tarihi</th>
+                            <th>Durum</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody id="returns-list">
+                        <tr>
+                            <td>RET-001</td>
+                            <td><a href="#" onclick="viewOrder('ORD-152')">ORD-152</a></td>
+                            <td>Ayşe Yılmaz</td>
+                            <td>Premium Gömlek (L)</td>
+                            <td>Yanlış Beden</td>
+                            <td>₺850</td>
+                            <td>2024-01-15</td>
+                            <td><span class="status-badge status-pending">Beklemede</span></td>
+                            <td>
+                                <button class="btn-sm btn-success" onclick="approveReturn('RET-001')">Onayla</button>
+                                <button class="btn-sm btn-danger" onclick="rejectReturn('RET-001')">Reddet</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>RET-002</td>
+                            <td><a href="#" onclick="viewOrder('ORD-148')">ORD-148</a></td>
+                            <td>Mehmet Öz</td>
+                            <td>Klasik Pantolon</td>
+                            <td>Defolu Ürün</td>
+                            <td>₺1,200</td>
+                            <td>2024-01-14</td>
+                            <td><span class="status-badge status-approved">Onaylandı</span></td>
+                            <td>
+                                <button class="btn-sm" onclick="viewReturnDetails('RET-002')">Detay</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>RET-003</td>
+                            <td><a href="#" onclick="viewOrder('ORD-145')">ORD-145</a></td>
+                            <td>Zeynep Kaya</td>
+                            <td>Yazlık Ceket</td>
+                            <td>Açıklamaya Uymuyor</td>
+                            <td>₺3,200</td>
+                            <td>2024-01-13</td>
+                            <td><span class="status-badge status-pending">Beklemede</span></td>
+                            <td>
+                                <button class="btn-sm btn-success" onclick="approveReturn('RET-003')">Onayla</button>
+                                <button class="btn-sm btn-danger" onclick="rejectReturn('RET-003')">Reddet</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination">
+            <button class="pagination-btn" onclick="previousPage()">←</button>
+            <span class="pagination-info">Sayfa <span id="current-page">1</span> / <span id="total-pages">3</span></span>
+            <button class="pagination-btn" onclick="nextPage()">→</button>
+        </div>
+    </main>
+
+    <!-- Return Detail Modal -->
+    <div id="return-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>İade Detayı</h2>
+                <button class="modal-close" onclick="closeReturnModal()">×</button>
+            </div>
+            <div class="modal-body" id="return-detail">
+                <!-- Return details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="supabase-config.js"></script>
+    <script src="supabase-only-auth.js"></script>
+    <script src="auth-guard.js"></script>
+    <script>
+        // Initialize auth check on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Auth guard will handle authentication automatically
+        });
+
+        function viewOrder(orderId) {
+            alert('Sipariş detayı: ' + orderId);
+        }
+
+        function approveReturn(returnId) {
+            if (confirm('Bu iadeyi onaylamak istediğinize emin misiniz?')) {
+                alert('İade onaylandı: ' + returnId);
+                // Update status in table
+                location.reload();
+            }
+        }
+
+        function rejectReturn(returnId) {
+            const reason = prompt('Red sebebini giriniz:');
+            if (reason) {
+                alert('İade reddedildi: ' + returnId + '\nSebep: ' + reason);
+                // Update status in table
+                location.reload();
+            }
+        }
+
+        function viewReturnDetails(returnId) {
+            document.getElementById('return-modal').style.display = 'flex';
+            document.getElementById('return-detail').innerHTML = `
+                <div class="return-detail-content">
+                    <h3>İade No: ${returnId}</h3>
+                    <div class="detail-section">
+                        <h4>İade Bilgileri</h4>
+                        <p><strong>Durum:</strong> Onaylandı</p>
+                        <p><strong>Onay Tarihi:</strong> 2024-01-15</p>
+                        <p><strong>İade Tutarı:</strong> ₺1,200</p>
+                        <p><strong>İade Yöntemi:</strong> Banka Havalesi</p>
+                    </div>
+                    <div class="detail-section">
+                        <h4>Müşteri Notu</h4>
+                        <p>Ürün üzerinde dikişlerde bozukluk vardı. Fotoğrafları ekliyorum.</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function closeReturnModal() {
+            document.getElementById('return-modal').style.display = 'none';
+        }
+
+        function refreshReturns() {
+            alert('İade listesi yenilendi!');
+        }
+
+        function previousPage() {
+            alert('Önceki sayfa');
+        }
+
+        function nextPage() {
+            alert('Sonraki sayfa');
+        }
+    </script>
+</body>
+</html>

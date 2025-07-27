@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sole Portofino - Analizler</title>
+    <link rel="stylesheet" href="css/admin.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h2>SOLE PORTOFINO</h2>
+            <span class="admin-badge">Admin</span>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="nav-item">
+                <span class="icon">📊</span>
+                <span>Dashboard</span>
+            </a>
+            <a href="orders.html" class="nav-item">
+                <span class="icon">📦</span>
+                <span>Siparişler</span>
+                <span class="badge" id="new-orders-count">0</span>
+            </a>
+            <a href="products.html" class="nav-item">
+                <span class="icon">👜</span>
+                <span>Ürün Yönetimi</span>
+            </a>
+            <a href="customers.html" class="nav-item">
+                <span class="icon">👥</span>
+                <span>Müşteriler</span>
+            </a>
+            <a href="analytics.html" class="nav-item active">
+                <span class="icon">📈</span>
+                <span>Analizler</span>
+            </a>
+            <a href="returns.html" class="nav-item">
+                <span class="icon">↩️</span>
+                <span>İadeler</span>
+            </a>
+            <a href="settings.html" class="nav-item">
+                <span class="icon">⚙️</span>
+                <span>Ayarlar</span>
+            </a>
+        </nav>
+        
+        <div class="sidebar-footer">
+            <button class="logout-button" id="logout-button">
+                <span class="icon">🚪</span>
+                <span>Çıkış Yap</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="main-header">
+            <h1>Analizler</h1>
+            <div class="header-actions">
+                <select class="period-select" id="global-period">
+                    <option value="week">Bu Hafta</option>
+                    <option value="month" selected>Bu Ay</option>
+                    <option value="quarter">Bu Çeyrek</option>
+                    <option value="year">Bu Yıl</option>
+                </select>
+                <button class="btn-primary" onclick="exportReport()">
+                    <span class="icon">📊</span>
+                    Rapor İndir
+                </button>
+                <div class="user-info">
+                    <span id="user-email">admin@soleportofino.com</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Key Metrics -->
+        <div class="analytics-kpi">
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <h3>Gelir</h3>
+                    <span class="kpi-change positive">+23.5%</span>
+                </div>
+                <p class="kpi-value">₺487,250</p>
+                <p class="kpi-comparison">Geçen ay: ₺394,800</p>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <h3>Sipariş Sayısı</h3>
+                    <span class="kpi-change positive">+18.2%</span>
+                </div>
+                <p class="kpi-value">342</p>
+                <p class="kpi-comparison">Geçen ay: 289</p>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <h3>Ortalama Sipariş</h3>
+                    <span class="kpi-change positive">+4.7%</span>
+                </div>
+                <p class="kpi-value">₺1,425</p>
+                <p class="kpi-comparison">Geçen ay: ₺1,361</p>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <h3>Dönüşüm Oranı</h3>
+                    <span class="kpi-change negative">-2.1%</span>
+                </div>
+                <p class="kpi-value">3.8%</p>
+                <p class="kpi-comparison">Geçen ay: 4.1%</p>
+            </div>
+        </div>
+
+        <!-- Charts Row 1 -->
+        <div class="charts-row">
+            <div class="chart-card large">
+                <div class="chart-header">
+                    <h3>Satış Trendi</h3>
+                    <div class="chart-actions">
+                        <button class="chart-btn active" onclick="updateSalesChart('revenue')">Gelir</button>
+                        <button class="chart-btn" onclick="updateSalesChart('orders')">Sipariş</button>
+                    </div>
+                </div>
+                <canvas id="salesTrendChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3>Kategori Dağılımı</h3>
+                </div>
+                <canvas id="categoryChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Charts Row 2 -->
+        <div class="charts-row">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3>En Çok Satan Ürünler</h3>
+                </div>
+                <div class="top-products-list">
+                    <div class="product-item">
+                        <span class="product-rank">1</span>
+                        <div class="product-details">
+                            <p class="product-name">Premium Gömlek</p>
+                            <p class="product-sales">87 satış</p>
+                        </div>
+                        <span class="product-revenue">₺73,950</span>
+                    </div>
+                    <div class="product-item">
+                        <span class="product-rank">2</span>
+                        <div class="product-details">
+                            <p class="product-name">Klasik Pantolon</p>
+                            <p class="product-sales">64 satış</p>
+                        </div>
+                        <span class="product-revenue">₺76,800</span>
+                    </div>
+                    <div class="product-item">
+                        <span class="product-rank">3</span>
+                        <div class="product-details">
+                            <p class="product-name">Yazlık Ceket</p>
+                            <p class="product-sales">45 satış</p>
+                        </div>
+                        <span class="product-revenue">₺144,000</span>
+                    </div>
+                    <div class="product-item">
+                        <span class="product-rank">4</span>
+                        <div class="product-details">
+                            <p class="product-name">Deri Kemer</p>
+                            <p class="product-sales">123 satış</p>
+                        </div>
+                        <span class="product-revenue">₺49,200</span>
+                    </div>
+                    <div class="product-item">
+                        <span class="product-rank">5</span>
+                        <div class="product-details">
+                            <p class="product-name">Spor Ayakkabı</p>
+                            <p class="product-sales">38 satış</p>
+                        </div>
+                        <span class="product-revenue">₺91,200</span>
+                    </div>
+                </div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3>Müşteri Segmentleri</h3>
+                </div>
+                <canvas id="customerSegmentChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Traffic Sources -->
+        <div class="chart-card full-width">
+            <div class="chart-header">
+                <h3>Trafik Kaynakları</h3>
+            </div>
+            <div class="traffic-sources">
+                <div class="traffic-item">
+                    <div class="traffic-source">
+                        <span class="traffic-icon">🔍</span>
+                        <span>Organik Arama</span>
+                    </div>
+                    <div class="traffic-stats">
+                        <div class="traffic-bar" style="width: 45%"></div>
+                        <span class="traffic-percentage">45%</span>
+                    </div>
+                </div>
+                <div class="traffic-item">
+                    <div class="traffic-source">
+                        <span class="traffic-icon">📱</span>
+                        <span>Sosyal Medya</span>
+                    </div>
+                    <div class="traffic-stats">
+                        <div class="traffic-bar" style="width: 30%"></div>
+                        <span class="traffic-percentage">30%</span>
+                    </div>
+                </div>
+                <div class="traffic-item">
+                    <div class="traffic-source">
+                        <span class="traffic-icon">📧</span>
+                        <span>E-posta</span>
+                    </div>
+                    <div class="traffic-stats">
+                        <div class="traffic-bar" style="width: 15%"></div>
+                        <span class="traffic-percentage">15%</span>
+                    </div>
+                </div>
+                <div class="traffic-item">
+                    <div class="traffic-source">
+                        <span class="traffic-icon">🔗</span>
+                        <span>Direkt</span>
+                    </div>
+                    <div class="traffic-stats">
+                        <div class="traffic-bar" style="width: 10%"></div>
+                        <span class="traffic-percentage">10%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="supabase-config.js"></script>
+    <script src="supabase-only-auth.js"></script>
+    <script src="auth-guard.js"></script>
+    <script>
+        // Initialize auth check on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Auth guard will handle authentication automatically
+            
+            // Initialize charts
+            initCharts();
+        });
+
+        function initCharts() {
+            // Sales Trend Chart
+            const salesCtx = document.getElementById('salesTrendChart').getContext('2d');
+            new Chart(salesCtx, {
+                type: 'line',
+                data: {
+                    labels: ['1', '5', '10', '15', '20', '25', '30'],
+                    datasets: [{
+                        label: 'Gelir',
+                        data: [12000, 19000, 15000, 25000, 22000, 30000, 28000],
+                        borderColor: '#4CAF50',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Category Chart
+            const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+            new Chart(categoryCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Gömlekler', 'Pantolonlar', 'Ceketler', 'Aksesuarlar'],
+                    datasets: [{
+                        data: [35, 25, 30, 10],
+                        backgroundColor: ['#4CAF50', '#2196F3', '#FF9800', '#E91E63']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Customer Segment Chart
+            const segmentCtx = document.getElementById('customerSegmentChart').getContext('2d');
+            new Chart(segmentCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['VIP', 'Düzenli', 'Yeni', 'Pasif'],
+                    datasets: [{
+                        label: 'Müşteri Sayısı',
+                        data: [89, 234, 145, 67],
+                        backgroundColor: '#2196F3'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        function updateSalesChart(type) {
+            alert('Grafik güncelleniyor: ' + type);
+        }
+
+        function exportReport() {
+            alert('Analiz raporu indiriliyor...');
+        }
+    </script>
+</body>
+</html>
