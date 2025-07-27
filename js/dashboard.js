@@ -1,5 +1,9 @@
 // Sole Portofino Admin Dashboard
 
+console.log('🟠 DASHBOARD.JS loaded - Version: 1.1');
+console.log('📍 Dashboard URL:', window.location.href);
+console.log('📍 Dashboard pathname:', window.location.pathname);
+
 // Check authentication for dashboard
 async function checkDashboardAuth() {
     try {

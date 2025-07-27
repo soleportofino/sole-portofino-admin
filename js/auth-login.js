@@ -1,6 +1,9 @@
 // Sole Portofino Admin - Login Page Authentication
 // This file contains authentication logic specific to the login page
 
+console.log('🟢 AUTH-LOGIN.JS loaded - Version: 1.1');
+console.log('📍 Login page URL:', window.location.href);
+
 let isCheckingAuth = false;
 
 // Check if user is already logged in (login page only)

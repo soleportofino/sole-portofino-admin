@@ -1,6 +1,11 @@
 // Sole Portofino Admin - Common Authentication Functions
 // This file contains shared authentication functionality used by both login and dashboard pages
 
+console.log('🔵 AUTH-COMMON.JS loaded - Version: 1.1');
+console.log('📍 Current URL:', window.location.href);
+console.log('📍 Pathname:', window.location.pathname);
+console.log('📍 Hostname:', window.location.hostname);
+
 let supabase = null;
 
 // Global error handler to prevent page refresh on errors
@@ -24,6 +29,12 @@ async function initializeSupabase() {
     // Log for debugging (remove in production)
     console.log('Supabase URL:', SUPABASE_URL.substring(0, 30) + '...');
     console.log('Supabase Key exists:', SUPABASE_ANON_KEY.length > 0);
+    console.log('Environment check:', {
+        urlIsPlaceholder: SUPABASE_URL.includes('__'),
+        keyIsPlaceholder: SUPABASE_ANON_KEY.includes('__'),
+        urlValue: SUPABASE_URL,
+        keyLength: SUPABASE_ANON_KEY.length
+    });
     
     // Check if placeholders were replaced
     if (SUPABASE_URL.includes('__') || SUPABASE_ANON_KEY.includes('__')) {
