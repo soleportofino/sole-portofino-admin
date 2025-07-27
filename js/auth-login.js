@@ -1,10 +1,12 @@
 // Sole Portofino Admin - Login Page Authentication
 // This file contains authentication logic specific to the login page
 
-console.log('🟢 AUTH-LOGIN.JS loaded - Version: 1.2');
+console.log('🟢 AUTH-LOGIN.JS loaded - Version: 1.3');
 console.log('📍 Login page URL:', window.location.href);
 
 let isCheckingAuth = false;
+let lastLoginAuthCheck = 0;
+const LOGIN_AUTH_CHECK_COOLDOWN = 2000; // 2 seconds cooldown between auth checks
 
 // Check if user is already logged in (login page only)
 async function checkLoginPageAuth() {
@@ -14,9 +16,17 @@ async function checkLoginPageAuth() {
         return;
     }
     
+    // Check cooldown to prevent rapid auth checks
+    const now = Date.now();
+    if (now - lastLoginAuthCheck < LOGIN_AUTH_CHECK_COOLDOWN) {
+        console.log('⏳ Login auth check cooldown active, skipping...');
+        return;
+    }
+    
     // Prevent multiple simultaneous auth checks
     if (isCheckingAuth) return;
     isCheckingAuth = true;
+    lastLoginAuthCheck = now;
     
     try {
         // Check current file to prevent cross-page redirects
@@ -106,12 +116,31 @@ async function handleLogin(e) {
             throw error;
         }
         
+        console.log('Login successful, session data:', data);
+        
         // Store remember preference
         if (remember) {
             localStorage.setItem('rememberMe', 'true');
         } else {
             localStorage.removeItem('rememberMe');
         }
+        
+        // Wait for session to be fully established
+        console.log('Waiting for session to establish...');
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Verify session is established
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError || !sessionData.session) {
+            console.error('Session verification failed:', sessionError);
+            throw new Error('Failed to establish session. Please try again.');
+        }
+        
+        console.log('Session verified, redirecting to dashboard...');
+        
+        // Store session info in localStorage as backup
+        localStorage.setItem('supabase_auth_token', sessionData.session.access_token);
+        localStorage.setItem('supabase_user_id', sessionData.session.user.id);
         
         // Redirect to dashboard
         window.location.href = 'dashboard.html';

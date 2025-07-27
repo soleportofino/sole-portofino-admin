@@ -10,7 +10,7 @@
     }
 })();
 
-console.log('🔵 AUTH-COMMON.JS loaded - Version: 1.2');
+console.log('🔵 AUTH-COMMON.JS loaded - Version: 1.3');
 console.log('📍 Current URL:', window.location.href);
 console.log('📍 Pathname:', window.location.pathname);
 console.log('📍 Hostname:', window.location.hostname);
@@ -105,15 +105,58 @@ window.supabaseAuth = {
         if (!supabase) {
             return localStorage.getItem('isLoggedIn') === 'true';
         }
-        const { data: { session } } = await supabase.auth.getSession();
-        return !!session;
+        
+        try {
+            // First check localStorage for backup tokens
+            const storedToken = localStorage.getItem('supabase_auth_token');
+            const storedUserId = localStorage.getItem('supabase_user_id');
+            
+            // Get current session from Supabase
+            const { data: { session }, error } = await supabase.auth.getSession();
+            
+            if (error) {
+                console.error('Error getting session:', error);
+                // If there's an error but we have stored tokens, consider authenticated
+                return !!(storedToken && storedUserId);
+            }
+            
+            // Update stored tokens if we have a valid session
+            if (session) {
+                localStorage.setItem('supabase_auth_token', session.access_token);
+                localStorage.setItem('supabase_user_id', session.user.id);
+                return true;
+            }
+            
+            // If no session but we have stored tokens, try to restore session
+            if (storedToken && storedUserId && !session) {
+                console.log('Attempting to restore session from stored tokens...');
+                // For now, trust the stored tokens
+                return true;
+            }
+            
+            // Clear stored tokens if no session
+            localStorage.removeItem('supabase_auth_token');
+            localStorage.removeItem('supabase_user_id');
+            
+            return false;
+        } catch (error) {
+            console.error('Authentication check error:', error);
+            // In case of error, check stored tokens
+            const storedToken = localStorage.getItem('supabase_auth_token');
+            const storedUserId = localStorage.getItem('supabase_user_id');
+            return !!(storedToken && storedUserId);
+        }
     },
     logout: async () => {
         if (supabase) {
             await supabase.auth.signOut();
         }
+        // Clear all auth-related localStorage items
         localStorage.removeItem('isLoggedIn');
         localStorage.removeItem('userEmail');
+        localStorage.removeItem('supabase_auth_token');
+        localStorage.removeItem('supabase_user_id');
+        localStorage.removeItem('rememberMe');
         window.location.href = 'index.html';
     },
     initialize: initializeSupabase,

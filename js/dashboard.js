@@ -1,11 +1,13 @@
 // Sole Portofino Admin Dashboard
 
-console.log('🟠 DASHBOARD.JS loaded - Version: 1.3');
+console.log('🟠 DASHBOARD.JS loaded - Version: 1.4');
 console.log('📍 Dashboard URL:', window.location.href);
 console.log('📍 Dashboard pathname:', window.location.pathname);
 console.log('🛑 Emergency stop active:', window.STOP_ALL_REDIRECTS || false);
 
 let isDashboardCheckingAuth = false;
+let lastAuthCheck = 0;
+const AUTH_CHECK_COOLDOWN = 2000; // 2 seconds cooldown between auth checks
 
 // Check authentication for dashboard
 async function checkDashboardAuth() {
@@ -15,9 +17,17 @@ async function checkDashboardAuth() {
         return;
     }
     
+    // Check cooldown to prevent rapid auth checks
+    const now = Date.now();
+    if (now - lastAuthCheck < AUTH_CHECK_COOLDOWN) {
+        console.log('⏳ Auth check cooldown active, skipping...');
+        return;
+    }
+    
     // Prevent multiple simultaneous auth checks
     if (isDashboardCheckingAuth) return;
     isDashboardCheckingAuth = true;
+    lastAuthCheck = now;
     
     try {
         // Check current file to prevent cross-page redirects
