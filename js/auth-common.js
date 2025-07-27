@@ -1,10 +1,20 @@
 // Sole Portofino Admin - Common Authentication Functions
 // This file contains shared authentication functionality used by both login and dashboard pages
 
-console.log('🔵 AUTH-COMMON.JS loaded - Version: 1.1');
+// EMERGENCY STOP MECHANISM
+(function() {
+    const EMERGENCY_STOP = window.location.hash === '#stop';
+    if (EMERGENCY_STOP) {
+        console.log('🛑 EMERGENCY STOP ACTIVATED - NO REDIRECTS WILL OCCUR');
+        window.STOP_ALL_REDIRECTS = true;
+    }
+})();
+
+console.log('🔵 AUTH-COMMON.JS loaded - Version: 1.2');
 console.log('📍 Current URL:', window.location.href);
 console.log('📍 Pathname:', window.location.pathname);
 console.log('📍 Hostname:', window.location.hostname);
+console.log('🛑 Emergency stop active:', window.STOP_ALL_REDIRECTS || false);
 
 let supabase = null;
 

@@ -1,18 +1,35 @@
 // Sole Portofino Admin - Login Page Authentication
 // This file contains authentication logic specific to the login page
 
-console.log('🟢 AUTH-LOGIN.JS loaded - Version: 1.1');
+console.log('🟢 AUTH-LOGIN.JS loaded - Version: 1.2');
 console.log('📍 Login page URL:', window.location.href);
 
 let isCheckingAuth = false;
 
 // Check if user is already logged in (login page only)
 async function checkLoginPageAuth() {
+    // Emergency stop check
+    if (window.STOP_ALL_REDIRECTS) {
+        console.log('🛑 Login auth check skipped - Emergency stop active');
+        return;
+    }
+    
     // Prevent multiple simultaneous auth checks
     if (isCheckingAuth) return;
     isCheckingAuth = true;
     
     try {
+        // Check current file to prevent cross-page redirects
+        const currentFile = window.location.pathname.split('/').pop() || 'index.html';
+        console.log('Login auth check - Current file:', currentFile);
+        
+        // If we're on dashboard, don't do login auth check
+        if (currentFile.includes('dashboard')) {
+            console.log('⚠️ On dashboard page, skipping login auth check');
+            isCheckingAuth = false;
+            return;
+        }
+        
         console.log('Login page auth check started');
         
         // Wait for supabaseAuth to be ready

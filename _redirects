@@ -1,8 +1,8 @@
-# Specific routes first
+# Dashboard route
 /dashboard /dashboard.html 200
-/dashboard.html /dashboard.html 200
+
+# Root route  
 / /index.html 200
-/index.html /index.html 200
 
 # Catch all for other routes
 /* /index.html 200

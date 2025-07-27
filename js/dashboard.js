@@ -1,16 +1,41 @@
 // Sole Portofino Admin Dashboard
 
-console.log('🟠 DASHBOARD.JS loaded - Version: 1.1');
+console.log('🟠 DASHBOARD.JS loaded - Version: 1.3');
 console.log('📍 Dashboard URL:', window.location.href);
 console.log('📍 Dashboard pathname:', window.location.pathname);
+console.log('🛑 Emergency stop active:', window.STOP_ALL_REDIRECTS || false);
+
+let isDashboardCheckingAuth = false;
 
 // Check authentication for dashboard
 async function checkDashboardAuth() {
+    // Emergency stop check
+    if (window.STOP_ALL_REDIRECTS) {
+        console.log('🛑 Dashboard auth check skipped - Emergency stop active');
+        return;
+    }
+    
+    // Prevent multiple simultaneous auth checks
+    if (isDashboardCheckingAuth) return;
+    isDashboardCheckingAuth = true;
+    
     try {
+        // Check current file to prevent cross-page redirects
+        const currentFile = window.location.pathname.split('/').pop() || 'index.html';
+        console.log('Dashboard auth check - Current file:', currentFile);
+        
+        // If we're on login page, don't do dashboard auth check
+        if (currentFile === 'index.html' || currentFile === '') {
+            console.log('⚠️ On login page, skipping dashboard auth check');
+            isDashboardCheckingAuth = false;
+            return;
+        }
+        
         // Wait for auth.js to initialize
         if (!window.supabaseAuth) {
             console.warn('Waiting for auth module to initialize...');
             setTimeout(checkDashboardAuth, 100);
+            isDashboardCheckingAuth = false;
             return;
         }
         
@@ -51,6 +76,8 @@ async function checkDashboardAuth() {
         }
     } catch (error) {
         console.error('Dashboard auth check error:', error);
+    } finally {
+        isDashboardCheckingAuth = false;
     }
 }
 
