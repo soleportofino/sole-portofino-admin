@@ -1,11 +1,20 @@
 // Sole Portofino Admin Dashboard
 
-// Check authentication
-async function checkAuth() {
-    // Check if we have Supabase auth available
-    if (window.supabaseAuth) {
+// Check authentication for dashboard
+async function checkDashboardAuth() {
+    try {
+        // Wait for auth.js to initialize
+        if (!window.supabaseAuth) {
+            console.warn('Waiting for auth module to initialize...');
+            setTimeout(checkDashboardAuth, 100);
+            return;
+        }
+        
         const isAuthenticated = await window.supabaseAuth.isAuthenticated();
+        console.log('Dashboard auth check - isAuthenticated:', isAuthenticated);
+        
         if (!isAuthenticated) {
+            console.log('User not authenticated, redirecting to login');
             window.location.href = 'index.html';
             return;
         }
@@ -13,29 +22,38 @@ async function checkAuth() {
         // Get user email from Supabase or localStorage
         const supabase = window.supabaseAuth.getSupabase();
         if (supabase) {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
-                document.getElementById('user-email').textContent = user.email;
-                return;
+            try {
+                const { data: { user }, error } = await supabase.auth.getUser();
+                if (error) {
+                    console.error('Error getting user:', error);
+                } else if (user) {
+                    console.log('User email:', user.email);
+                    const emailElement = document.getElementById('user-email');
+                    if (emailElement) {
+                        emailElement.textContent = user.email;
+                    }
+                    return;
+                }
+            } catch (e) {
+                console.error('Error in getUser:', e);
             }
         }
+        
+        // Fallback to localStorage (demo mode)
+        const userEmail = localStorage.getItem('userEmail') || 'admin@soleportofino.com';
+        const emailElement = document.getElementById('user-email');
+        if (emailElement) {
+            emailElement.textContent = userEmail;
+        }
+    } catch (error) {
+        console.error('Dashboard auth check error:', error);
     }
-    
-    // Fallback to demo mode
-    const isLoggedIn = localStorage.getItem('isLoggedIn');
-    if (!isLoggedIn) {
-        window.location.href = 'index.html';
-        return;
-    }
-    
-    // Update user email
-    const userEmail = localStorage.getItem('userEmail') || 'admin@soleportofino.com';
-    document.getElementById('user-email').textContent = userEmail;
 }
 
 // Initialize dashboard
 document.addEventListener('DOMContentLoaded', function() {
-    checkAuth();
+    console.log('Dashboard loaded, initializing...');
+    checkDashboardAuth();
     initDashboard();
     initCharts();
     loadRecentOrders();

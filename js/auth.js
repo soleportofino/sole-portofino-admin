@@ -1,6 +1,18 @@
 // Sole Portofino Admin Authentication
 
 let supabase = null;
+let isCheckingAuth = false;
+
+// Global error handler to prevent page refresh on errors
+window.addEventListener('error', function(event) {
+    console.error('Global error caught:', event.error);
+    event.preventDefault();
+});
+
+window.addEventListener('unhandledrejection', function(event) {
+    console.error('Unhandled promise rejection:', event.reason);
+    event.preventDefault();
+});
 
 // Initialize Supabase with environment variables
 async function initializeSupabase() {
@@ -18,10 +30,6 @@ async function initializeSupabase() {
         console.warn('Environment variables not set. Using demo mode.');
         return false;
     }
-    
-    // TEMPORARY: Force demo mode due to Supabase 500 error
-    console.warn('⚠️ TEMPORARY: Demo mode active due to Supabase configuration issues');
-    return false;
     
     try {
         // Create Supabase client with v2 configuration
@@ -49,20 +57,51 @@ async function initializeSupabase() {
 
 // Check if user is already logged in
 async function checkAuth() {
-    if (!supabase) {
-        // Demo mode - check localStorage
-        const isLoggedIn = localStorage.getItem('isLoggedIn');
-        if (isLoggedIn) {
-            window.location.href = 'dashboard.html';
+    // Prevent multiple simultaneous auth checks
+    if (isCheckingAuth) return;
+    isCheckingAuth = true;
+    
+    try {
+        // Only redirect from login page, not from dashboard
+        const currentPage = window.location.pathname.toLowerCase();
+        const currentFile = window.location.href.split('/').pop().toLowerCase();
+        const isLoginPage = currentFile === 'index.html' || currentFile === '' || currentPage === '/' || currentPage === '';
+        const isDashboardPage = currentFile.includes('dashboard') || currentPage.includes('dashboard');
+        
+        console.log('CheckAuth - Current page:', currentPage);
+        console.log('Is login page:', isLoginPage);
+        console.log('Is dashboard page:', isDashboardPage);
+        
+        if (!supabase) {
+            // Demo mode - check localStorage
+            const isLoggedIn = localStorage.getItem('isLoggedIn');
+            if (isLoggedIn && isLoginPage) {
+                console.log('Demo mode: Redirecting to dashboard');
+                window.location.href = 'dashboard.html';
+            }
+            return;
         }
-        return;
-    }
-    
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    if (session) {
-        // Redirect to dashboard if already logged in
-        window.location.href = 'dashboard.html';
+        
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+            console.error('Error checking session:', error);
+            return;
+        }
+        
+        console.log('Session exists:', !!session);
+        
+        if (session && isLoginPage) {
+            // Only redirect if we're on the login page
+            console.log('User authenticated, redirecting to dashboard');
+            window.location.href = 'dashboard.html';
+        } else if (!session && isDashboardPage) {
+            // Redirect to login if not authenticated and on dashboard
+            console.log('User not authenticated, redirecting to login');
+            window.location.href = 'index.html';
+        }
+    } finally {
+        isCheckingAuth = false;
     }
 }
 
