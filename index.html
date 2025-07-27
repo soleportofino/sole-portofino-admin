@@ -50,9 +50,20 @@
         </div>
     </div>
 
-    <!-- Supabase Client -->
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-    <script src="js/auth-common.js"></script>
-    <script src="js/auth-login.js"></script>
+    <script src="simple-auth.js"></script>
+    <script>
+        document.getElementById('login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            document.querySelector('.button-text').style.display = 'none';
+            document.querySelector('.button-loading').style.display = 'inline-block';
+            document.getElementById('error-message').style.display = 'none';
+            
+            setTimeout(() => {
+                login();
+                document.querySelector('.button-text').style.display = 'inline';
+                document.querySelector('.button-loading').style.display = 'none';
+            }, 500);
+        });
+    </script>
 </body>
 </html>
