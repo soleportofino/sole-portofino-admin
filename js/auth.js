@@ -19,6 +19,10 @@ async function initializeSupabase() {
         return false;
     }
     
+    // TEMPORARY: Force demo mode due to Supabase 500 error
+    console.warn('⚠️ TEMPORARY: Demo mode active due to Supabase configuration issues');
+    return false;
+    
     try {
         // Create Supabase client with v2 configuration
         supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
