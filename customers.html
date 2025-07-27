@@ -17,39 +17,39 @@
         
         <nav class="sidebar-nav">
             <a href="dashboard.html" class="nav-item">
-                <span class="icon">📊</span>
+                <span class="icon">•</span>
                 <span>Dashboard</span>
             </a>
             <a href="orders.html" class="nav-item">
-                <span class="icon">📦</span>
+                <span class="icon">•</span>
                 <span>Siparişler</span>
                 <span class="badge" id="new-orders-count">0</span>
             </a>
             <a href="products.html" class="nav-item">
-                <span class="icon">👜</span>
+                <span class="icon">•</span>
                 <span>Ürün Yönetimi</span>
             </a>
             <a href="customers.html" class="nav-item active">
-                <span class="icon">👥</span>
+                <span class="icon">•</span>
                 <span>Müşteriler</span>
             </a>
             <a href="analytics.html" class="nav-item">
-                <span class="icon">📈</span>
+                <span class="icon">•</span>
                 <span>Analizler</span>
             </a>
             <a href="returns.html" class="nav-item">
-                <span class="icon">↩️</span>
+                <span class="icon">•</span>
                 <span>İadeler</span>
             </a>
             <a href="settings.html" class="nav-item">
-                <span class="icon">⚙️</span>
+                <span class="icon">•</span>
                 <span>Ayarlar</span>
             </a>
         </nav>
         
         <div class="sidebar-footer">
             <button class="logout-button" id="logout-button">
-                <span class="icon">🚪</span>
+                <span class="icon">•</span>
                 <span>Çıkış Yap</span>
             </button>
         </div>
@@ -62,7 +62,7 @@
             <h1>Müşteriler</h1>
             <div class="header-actions">
                 <button class="btn-primary" onclick="exportCustomers()">
-                    <span class="icon">📥</span>
+                    <span class="icon">•</span>
                     Dışa Aktar
                 </button>
                 <div class="user-info">
@@ -74,14 +74,14 @@
         <!-- Stats -->
         <div class="customer-stats">
             <div class="stat-card">
-                <div class="stat-icon" style="background: #4CAF50;">👥</div>
+                <div class="stat-icon" style="background: #4CAF50;">•</div>
                 <div class="stat-content">
                     <h3>Toplam Müşteri</h3>
                     <p class="stat-value" id="total-customers">1,234</p>
                 </div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon" style="background: #2196F3;">✨</div>
+                <div class="stat-icon" style="background: #2196F3;">•</div>
                 <div class="stat-content">
                     <h3>Yeni Müşteriler</h3>
                     <p class="stat-value" id="new-customers">45</p>
@@ -89,14 +89,14 @@
                 </div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon" style="background: #FF9800;">⭐</div>
+                <div class="stat-icon" style="background: #FF9800;">•</div>
                 <div class="stat-content">
                     <h3>VIP Müşteriler</h3>
                     <p class="stat-value" id="vip-customers">89</p>
                 </div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon" style="background: #E91E63;">💰</div>
+                <div class="stat-icon" style="background: #E91E63;">•</div>
                 <div class="stat-content">
                     <h3>Ort. Harcama</h3>
                     <p class="stat-value">₺<span id="avg-spending">1,850</span></p>
@@ -160,8 +160,8 @@
                             <td><span class="badge badge-vip">VIP</span></td>
                             <td>2023-05-15</td>
                             <td>
-                                <button class="action-btn" onclick="viewCustomer(1001)">👁️</button>
-                                <button class="action-btn" onclick="editCustomer(1001)">✏️</button>
+                                <button class="action-btn" onclick="viewCustomer(1001)">Detay</button>
+                                <button class="action-btn" onclick="editCustomer(1001)">Düzenle</button>
                             </td>
                         </tr>
                         <tr>
@@ -175,8 +175,8 @@
                             <td><span class="badge">Düzenli</span></td>
                             <td>2023-08-20</td>
                             <td>
-                                <button class="action-btn" onclick="viewCustomer(1002)">👁️</button>
-                                <button class="action-btn" onclick="editCustomer(1002)">✏️</button>
+                                <button class="action-btn" onclick="viewCustomer(1002)">Detay</button>
+                                <button class="action-btn" onclick="editCustomer(1002)">Düzenle</button>
                             </td>
                         </tr>
                     </tbody>
@@ -206,44 +206,26 @@
     </div>
 
     <!-- Scripts -->
+    <script src="utils.js"></script>
     <script src="supabase-config.js"></script>
     <script src="supabase-only-auth.js"></script>
     <script src="auth-guard.js"></script>
-    <script>
-        // Initialize auth check on page load
+    <script type="module">
+        import { initializeCustomers } from './customers-data.js';
+        
+        // Initialize customers page after auth check
         document.addEventListener('DOMContentLoaded', async () => {
             // Auth guard will handle authentication automatically
+            
+            // Wait a bit for auth to initialize
+            setTimeout(async () => {
+                try {
+                    await initializeCustomers();
+                } catch (error) {
+                    console.error('Customers initialization error:', error);
+                }
+            }, 500);
         });
-
-        function viewCustomer(customerId) {
-            document.getElementById('customer-modal').style.display = 'flex';
-            document.getElementById('customer-detail').innerHTML = `
-                <div class="customer-detail-content">
-                    <h3>Müşteri #${customerId}</h3>
-                    <p>Detaylı müşteri bilgileri burada gösterilecek...</p>
-                </div>
-            `;
-        }
-
-        function editCustomer(customerId) {
-            alert('Müşteri düzenleme: ' + customerId);
-        }
-
-        function closeCustomerModal() {
-            document.getElementById('customer-modal').style.display = 'none';
-        }
-
-        function exportCustomers() {
-            alert('Müşteri listesi dışa aktarılıyor...');
-        }
-
-        function previousPage() {
-            alert('Önceki sayfa');
-        }
-
-        function nextPage() {
-            alert('Sonraki sayfa');
-        }
     </script>
 </body>
 </html>

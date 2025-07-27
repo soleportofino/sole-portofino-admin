@@ -17,39 +17,38 @@
         
         <nav class="sidebar-nav">
             <a href="dashboard.html" class="nav-item">
-                <span class="icon">📊</span>
+                <span class="icon">●</span>
                 <span>Dashboard</span>
             </a>
             <a href="orders.html" class="nav-item">
-                <span class="icon">📦</span>
+                <span class="icon">●</span>
                 <span>Siparişler</span>
                 <span class="badge" id="new-orders-count">0</span>
             </a>
             <a href="products.html" class="nav-item">
-                <span class="icon">👜</span>
+                <span class="icon">●</span>
                 <span>Ürün Yönetimi</span>
             </a>
             <a href="customers.html" class="nav-item">
-                <span class="icon">👥</span>
+                <span class="icon">●</span>
                 <span>Müşteriler</span>
             </a>
             <a href="analytics.html" class="nav-item">
-                <span class="icon">📈</span>
+                <span class="icon">●</span>
                 <span>Analizler</span>
             </a>
             <a href="returns.html" class="nav-item">
-                <span class="icon">↩️</span>
+                <span class="icon">●</span>
                 <span>İadeler</span>
             </a>
             <a href="settings.html" class="nav-item active">
-                <span class="icon">⚙️</span>
+                <span class="icon">●</span>
                 <span>Ayarlar</span>
             </a>
         </nav>
         
         <div class="sidebar-footer">
             <button class="logout-button" id="logout-button">
-                <span class="icon">🚪</span>
                 <span>Çıkış Yap</span>
             </button>
         </div>
@@ -62,7 +61,6 @@
             <h1>Ayarlar</h1>
             <div class="header-actions">
                 <button class="btn-primary" onclick="saveSettings()">
-                    <span class="icon">💾</span>
                     Değişiklikleri Kaydet
                 </button>
                 <div class="user-info">
@@ -89,15 +87,15 @@
                     <h3>Site Bilgileri</h3>
                     <div class="form-group">
                         <label>Site Adı</label>
-                        <input type="text" value="Sole Portofino" class="form-control">
+                        <input type="text" id="site-name" value="Sole Portofino" class="form-control">
                     </div>
                     <div class="form-group">
                         <label>Site URL</label>
-                        <input type="url" value="https://www.soleportofino.com" class="form-control">
+                        <input type="url" id="site-url" value="https://www.soleportofino.com" class="form-control">
                     </div>
                     <div class="form-group">
                         <label>Site Açıklaması</label>
-                        <textarea rows="3" class="form-control">İtalyan modasının en seçkin ürünlerini sunan premium mağaza</textarea>
+                        <textarea rows="3" id="site-description" class="form-control">İtalyan modasının en seçkin ürünlerini sunan premium mağaza</textarea>
                     </div>
                 </div>
 
@@ -105,15 +103,15 @@
                     <h3>İletişim Bilgileri</h3>
                     <div class="form-group">
                         <label>E-posta</label>
-                        <input type="email" value="info@soleportofino.com" class="form-control">
+                        <input type="email" id="contact-email" value="info@soleportofino.com" class="form-control">
                     </div>
                     <div class="form-group">
                         <label>Telefon</label>
-                        <input type="tel" value="+90 212 123 45 67" class="form-control">
+                        <input type="tel" id="contact-phone" value="+90 212 123 45 67" class="form-control">
                     </div>
                     <div class="form-group">
                         <label>Adres</label>
-                        <textarea rows="2" class="form-control">Nişantaşı, Abdi İpekçi Cad. No:123, İstanbul</textarea>
+                        <textarea rows="2" id="contact-address" class="form-control">Nişantaşı, Abdi İpekçi Cad. No:123, İstanbul</textarea>
                     </div>
                 </div>
             </div>
@@ -124,7 +122,7 @@
                     <h3>Mağaza Ayarları</h3>
                     <div class="form-group">
                         <label>Para Birimi</label>
-                        <select class="form-control">
+                        <select id="currency" class="form-control">
                             <option value="TRY" selected>Türk Lirası (₺)</option>
                             <option value="USD">US Dollar ($)</option>
                             <option value="EUR">Euro (€)</option>
@@ -132,19 +130,19 @@
                     </div>
                     <div class="form-group">
                         <label>Varsayılan Dil</label>
-                        <select class="form-control">
+                        <select id="language" class="form-control">
                             <option value="tr" selected>Türkçe</option>
                             <option value="en">English</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label>
-                            <input type="checkbox" checked> Stok takibi etkin
+                            <input type="checkbox" id="stock-tracking" checked> Stok takibi etkin
                         </label>
                     </div>
                     <div class="form-group">
                         <label>
-                            <input type="checkbox" checked> Misafir alışverişine izin ver
+                            <input type="checkbox" id="guest-checkout" checked> Misafir alışverişine izin ver
                         </label>
                     </div>
                 </div>
@@ -187,12 +185,12 @@
                     <h3>Kargo Ayarları</h3>
                     <div class="form-group">
                         <label>Ücretsiz Kargo Limiti</label>
-                        <input type="number" value="500" class="form-control" min="0">
+                        <input type="number" id="free-shipping-limit" value="500" class="form-control" min="0">
                         <small>0 girin sınır olmaması için</small>
                     </div>
                     <div class="form-group">
                         <label>Standart Kargo Ücreti</label>
-                        <input type="number" value="29.90" class="form-control" min="0" step="0.01">
+                        <input type="number" id="shipping-fee" value="29.90" class="form-control" min="0" step="0.01">
                     </div>
                     <div class="form-group">
                         <label>Kargo Firmaları</label>
@@ -270,14 +268,94 @@
     </main>
 
     <!-- Scripts -->
+    <script src="utils.js"></script>
     <script src="supabase-config.js"></script>
     <script src="supabase-only-auth.js"></script>
+    <script src="supabase-db.js"></script>
     <script src="auth-guard.js"></script>
     <script>
+        let settings = {};
+        let hasChanges = false;
+
         // Initialize auth check on page load
         document.addEventListener('DOMContentLoaded', async () => {
             // Auth guard will handle authentication automatically
+            
+            // Load settings
+            await loadSettings();
+            
+            // Track changes
+            document.querySelectorAll('input, select, textarea').forEach(element => {
+                element.addEventListener('change', () => {
+                    hasChanges = true;
+                });
+            });
+            
+            // Warn before leaving with unsaved changes
+            window.addEventListener('beforeunload', (e) => {
+                if (hasChanges) {
+                    e.preventDefault();
+                    e.returnValue = '';
+                }
+            });
         });
+
+        async function loadSettings() {
+            try {
+                settings = await window.db.settings.get();
+                
+                // General settings
+                if (settings.site_name) document.getElementById('site-name').value = settings.site_name;
+                if (settings.site_url) document.getElementById('site-url').value = settings.site_url;
+                if (settings.site_description) document.getElementById('site-description').value = settings.site_description;
+                if (settings.contact_email) document.getElementById('contact-email').value = settings.contact_email;
+                if (settings.contact_phone) document.getElementById('contact-phone').value = settings.contact_phone;
+                if (settings.contact_address) document.getElementById('contact-address').value = settings.contact_address;
+                
+                // Store settings
+                if (settings.currency) document.getElementById('currency').value = settings.currency;
+                if (settings.language) document.getElementById('language').value = settings.language;
+                if (settings.stock_tracking !== undefined) document.getElementById('stock-tracking').checked = settings.stock_tracking;
+                if (settings.guest_checkout !== undefined) document.getElementById('guest-checkout').checked = settings.guest_checkout;
+                
+                // Shipping settings
+                if (settings.free_shipping_limit !== undefined) document.getElementById('free-shipping-limit').value = settings.free_shipping_limit;
+                if (settings.shipping_fee !== undefined) document.getElementById('shipping-fee').value = settings.shipping_fee;
+                
+                // Payment methods
+                if (settings.payment_methods) {
+                    document.querySelectorAll('#payment-tab input[type="checkbox"]').forEach((checkbox, index) => {
+                        const methods = ['credit_card', 'bank_transfer', 'cash_on_delivery'];
+                        if (settings.payment_methods[methods[index]] !== undefined) {
+                            checkbox.checked = settings.payment_methods[methods[index]];
+                        }
+                    });
+                }
+                
+                // Notification settings
+                if (settings.notifications) {
+                    document.querySelectorAll('#notifications-tab input[type="checkbox"]').forEach((checkbox, index) => {
+                        const notifications = ['new_order', 'low_stock', 'daily_report', 'return_requests'];
+                        if (settings.notifications[notifications[index]] !== undefined) {
+                            checkbox.checked = settings.notifications[notifications[index]];
+                        }
+                    });
+                }
+                
+                // Shipping companies
+                if (settings.shipping_companies) {
+                    document.querySelectorAll('#shipping-tab .checkbox-group input[type="checkbox"]').forEach((checkbox, index) => {
+                        const companies = ['aras', 'mng', 'yurtici', 'ptt'];
+                        if (settings.shipping_companies[companies[index]] !== undefined) {
+                            checkbox.checked = settings.shipping_companies[companies[index]];
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading settings:', error);
+                window.utils.showNotification('Ayarlar yüklenirken hata oluştu', 'error');
+            }
+        }
 
         function showTab(tabName) {
             // Hide all tabs
@@ -293,20 +371,109 @@
             event.target.classList.add('active');
         }
 
-        function saveSettings() {
-            alert('Ayarlar kaydedildi!');
+        async function saveSettings() {
+            try {
+                const updatedSettings = {
+                    // General settings
+                    site_name: document.getElementById('site-name').value,
+                    site_url: document.getElementById('site-url').value,
+                    site_description: document.getElementById('site-description').value,
+                    contact_email: document.getElementById('contact-email').value,
+                    contact_phone: document.getElementById('contact-phone').value,
+                    contact_address: document.getElementById('contact-address').value,
+                    
+                    // Store settings
+                    currency: document.getElementById('currency').value,
+                    language: document.getElementById('language').value,
+                    stock_tracking: document.getElementById('stock-tracking').checked,
+                    guest_checkout: document.getElementById('guest-checkout').checked,
+                    
+                    // Shipping settings
+                    free_shipping_limit: parseFloat(document.getElementById('free-shipping-limit').value) || 0,
+                    shipping_fee: parseFloat(document.getElementById('shipping-fee').value) || 0,
+                    
+                    // Payment methods
+                    payment_methods: {
+                        credit_card: document.querySelectorAll('#payment-tab input[type="checkbox"]')[0].checked,
+                        bank_transfer: document.querySelectorAll('#payment-tab input[type="checkbox"]')[1].checked,
+                        cash_on_delivery: document.querySelectorAll('#payment-tab input[type="checkbox"]')[2].checked
+                    },
+                    
+                    // Notification settings
+                    notifications: {
+                        new_order: document.querySelectorAll('#notifications-tab input[type="checkbox"]')[0].checked,
+                        low_stock: document.querySelectorAll('#notifications-tab input[type="checkbox"]')[1].checked,
+                        daily_report: document.querySelectorAll('#notifications-tab input[type="checkbox"]')[2].checked,
+                        return_requests: document.querySelectorAll('#notifications-tab input[type="checkbox"]')[3].checked
+                    },
+                    
+                    // Shipping companies
+                    shipping_companies: {
+                        aras: document.querySelectorAll('#shipping-tab .checkbox-group input[type="checkbox"]')[0].checked,
+                        mng: document.querySelectorAll('#shipping-tab .checkbox-group input[type="checkbox"]')[1].checked,
+                        yurtici: document.querySelectorAll('#shipping-tab .checkbox-group input[type="checkbox"]')[2].checked,
+                        ptt: document.querySelectorAll('#shipping-tab .checkbox-group input[type="checkbox"]')[3].checked
+                    },
+                    
+                    updated_at: new Date().toISOString(),
+                    updated_by: (await window.supabase.auth.getUser()).data.user?.email
+                };
+                
+                await window.db.settings.update(updatedSettings);
+                
+                hasChanges = false;
+                window.utils.showNotification('Ayarlar başarıyla kaydedildi', 'success');
+            } catch (error) {
+                console.error('Error saving settings:', error);
+                window.utils.showNotification('Ayarlar kaydedilirken hata oluştu', 'error');
+            }
         }
 
         function configurePayment(method) {
-            alert('Ödeme yöntemi yapılandırılıyor: ' + method);
+            window.utils.showNotification('Ödeme yöntemi yapılandırma özelliği yakında eklenecek', 'info');
         }
 
-        function changePassword() {
-            alert('Şifre değiştirme işlemi başlatılıyor...');
+        async function changePassword() {
+            const currentPassword = document.querySelectorAll('#security-tab input[type="password"]')[0].value;
+            const newPassword = document.querySelectorAll('#security-tab input[type="password"]')[1].value;
+            const confirmPassword = document.querySelectorAll('#security-tab input[type="password"]')[2].value;
+            
+            if (!currentPassword || !newPassword || !confirmPassword) {
+                window.utils.showNotification('Lütfen tüm alanları doldurun', 'error');
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                window.utils.showNotification('Yeni şifreler eşleşmiyor', 'error');
+                return;
+            }
+            
+            if (newPassword.length < 6) {
+                window.utils.showNotification('Şifre en az 6 karakter olmalıdır', 'error');
+                return;
+            }
+            
+            try {
+                const { error } = await window.supabase.auth.updateUser({
+                    password: newPassword
+                });
+                
+                if (error) throw error;
+                
+                // Clear password fields
+                document.querySelectorAll('#security-tab input[type="password"]').forEach(input => {
+                    input.value = '';
+                });
+                
+                window.utils.showNotification('Şifre başarıyla değiştirildi', 'success');
+            } catch (error) {
+                console.error('Error changing password:', error);
+                window.utils.showNotification('Şifre değiştirilemedi: ' + error.message, 'error');
+            }
         }
 
         function enable2FA() {
-            alert('İki faktörlü doğrulama etkinleştiriliyor...');
+            window.utils.showNotification('İki faktörlü doğrulama özelliği yakında eklenecek', 'info');
         }
     </script>
 </body>

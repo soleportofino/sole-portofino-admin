@@ -17,39 +17,38 @@
         
         <nav class="sidebar-nav">
             <a href="dashboard.html" class="nav-item">
-                <span class="icon">📊</span>
+                <span class="icon">●</span>
                 <span>Dashboard</span>
             </a>
             <a href="orders.html" class="nav-item">
-                <span class="icon">📦</span>
+                <span class="icon">●</span>
                 <span>Siparişler</span>
                 <span class="badge" id="new-orders-count">0</span>
             </a>
             <a href="products.html" class="nav-item active">
-                <span class="icon">👜</span>
+                <span class="icon">●</span>
                 <span>Ürün Yönetimi</span>
             </a>
             <a href="customers.html" class="nav-item">
-                <span class="icon">👥</span>
+                <span class="icon">●</span>
                 <span>Müşteriler</span>
             </a>
             <a href="analytics.html" class="nav-item">
-                <span class="icon">📈</span>
+                <span class="icon">●</span>
                 <span>Analizler</span>
             </a>
             <a href="returns.html" class="nav-item">
-                <span class="icon">↩️</span>
+                <span class="icon">●</span>
                 <span>İadeler</span>
             </a>
             <a href="settings.html" class="nav-item">
-                <span class="icon">⚙️</span>
+                <span class="icon">●</span>
                 <span>Ayarlar</span>
             </a>
         </nav>
         
         <div class="sidebar-footer">
             <button class="logout-button" id="logout-button">
-                <span class="icon">🚪</span>
                 <span>Çıkış Yap</span>
             </button>
         </div>
@@ -62,7 +61,6 @@
             <h1>Ürün Yönetimi</h1>
             <div class="header-actions">
                 <button class="btn-primary" onclick="addNewProduct()">
-                    <span class="icon">➕</span>
                     Yeni Ürün Ekle
                 </button>
                 <div class="user-info">
@@ -176,114 +174,26 @@
     </div>
 
     <!-- Scripts -->
+    <script src="utils.js"></script>
     <script src="supabase-config.js"></script>
     <script src="supabase-only-auth.js"></script>
     <script src="auth-guard.js"></script>
-    <script>
-        // Initialize auth check on page load
+    <script type="module">
+        import { initializeProducts } from './products-data.js';
+        
+        // Initialize products page after auth check
         document.addEventListener('DOMContentLoaded', async () => {
             // Auth guard will handle authentication automatically
             
-            // Load products
-            loadProducts();
-            updateStats();
+            // Wait a bit for auth to initialize
+            setTimeout(async () => {
+                try {
+                    await initializeProducts();
+                } catch (error) {
+                    console.error('Products initialization error:', error);
+                }
+            }, 500);
         });
-
-        // Mock products data
-        const mockProducts = [
-            {
-                id: 1,
-                name: 'Premium Gömlek',
-                sku: 'SHR-001',
-                category: 'shirts',
-                price: 850,
-                stock: 25,
-                status: 'active',
-                image: 'https://via.placeholder.com/200'
-            },
-            {
-                id: 2,
-                name: 'Klasik Pantolon',
-                sku: 'PNT-001',
-                category: 'pants',
-                price: 1200,
-                stock: 0,
-                status: 'out-of-stock',
-                image: 'https://via.placeholder.com/200'
-            }
-        ];
-
-        function loadProducts() {
-            const grid = document.getElementById('products-grid');
-            grid.innerHTML = mockProducts.map(product => `
-                <div class="product-card">
-                    <img src="${product.image}" alt="${product.name}" class="product-image">
-                    <div class="product-info">
-                        <h3>${product.name}</h3>
-                        <p class="product-sku">SKU: ${product.sku}</p>
-                        <p class="product-price">₺${product.price}</p>
-                        <p class="product-stock ${product.stock === 0 ? 'out-of-stock' : ''}">
-                            Stok: ${product.stock}
-                        </p>
-                        <div class="product-actions">
-                            <button class="btn-sm" onclick="editProduct(${product.id})">Düzenle</button>
-                            <button class="btn-sm btn-danger" onclick="deleteProduct(${product.id})">Sil</button>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function updateStats() {
-            document.getElementById('total-products').textContent = mockProducts.length;
-            document.getElementById('active-products').textContent = mockProducts.filter(p => p.status === 'active').length;
-            document.getElementById('out-of-stock').textContent = mockProducts.filter(p => p.stock === 0).length;
-        }
-
-        function addNewProduct() {
-            document.getElementById('modal-title').textContent = 'Yeni Ürün Ekle';
-            document.getElementById('product-form').reset();
-            document.getElementById('product-modal').style.display = 'flex';
-        }
-
-        function editProduct(productId) {
-            const product = mockProducts.find(p => p.id === productId);
-            if (product) {
-                document.getElementById('modal-title').textContent = 'Ürün Düzenle';
-                document.getElementById('product-name').value = product.name;
-                document.getElementById('product-sku').value = product.sku;
-                document.getElementById('product-category').value = product.category;
-                document.getElementById('product-price').value = product.price;
-                document.getElementById('product-stock').value = product.stock;
-                document.getElementById('product-modal').style.display = 'flex';
-            }
-        }
-
-        function deleteProduct(productId) {
-            if (confirm('Bu ürünü silmek istediğinize emin misiniz?')) {
-                alert('Ürün silindi: ' + productId);
-                loadProducts();
-            }
-        }
-
-        function closeProductModal() {
-            document.getElementById('product-modal').style.display = 'none';
-        }
-
-        document.getElementById('product-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            alert('Ürün kaydedildi!');
-            closeProductModal();
-            loadProducts();
-        });
-
-        function previousPage() {
-            alert('Önceki sayfa');
-        }
-
-        function nextPage() {
-            alert('Sonraki sayfa');
-        }
     </script>
 </body>
 </html>

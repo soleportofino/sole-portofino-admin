@@ -18,39 +18,38 @@
         
         <nav class="sidebar-nav">
             <a href="dashboard.html" class="nav-item">
-                <span class="icon">📊</span>
+                <span class="icon">●</span>
                 <span>Dashboard</span>
             </a>
             <a href="orders.html" class="nav-item">
-                <span class="icon">📦</span>
+                <span class="icon">●</span>
                 <span>Siparişler</span>
                 <span class="badge" id="new-orders-count">0</span>
             </a>
             <a href="products.html" class="nav-item">
-                <span class="icon">👜</span>
+                <span class="icon">●</span>
                 <span>Ürün Yönetimi</span>
             </a>
             <a href="customers.html" class="nav-item">
-                <span class="icon">👥</span>
+                <span class="icon">●</span>
                 <span>Müşteriler</span>
             </a>
             <a href="analytics.html" class="nav-item active">
-                <span class="icon">📈</span>
+                <span class="icon">●</span>
                 <span>Analizler</span>
             </a>
             <a href="returns.html" class="nav-item">
-                <span class="icon">↩️</span>
+                <span class="icon">●</span>
                 <span>İadeler</span>
             </a>
             <a href="settings.html" class="nav-item">
-                <span class="icon">⚙️</span>
+                <span class="icon">●</span>
                 <span>Ayarlar</span>
             </a>
         </nav>
         
         <div class="sidebar-footer">
             <button class="logout-button" id="logout-button">
-                <span class="icon">🚪</span>
                 <span>Çıkış Yap</span>
             </button>
         </div>
@@ -69,7 +68,6 @@
                     <option value="year">Bu Yıl</option>
                 </select>
                 <button class="btn-primary" onclick="exportReport()">
-                    <span class="icon">📊</span>
                     Rapor İndir
                 </button>
                 <div class="user-info">
@@ -199,7 +197,7 @@
             <div class="traffic-sources">
                 <div class="traffic-item">
                     <div class="traffic-source">
-                        <span class="traffic-icon">🔍</span>
+                        <span class="traffic-icon">○</span>
                         <span>Organik Arama</span>
                     </div>
                     <div class="traffic-stats">
@@ -209,7 +207,7 @@
                 </div>
                 <div class="traffic-item">
                     <div class="traffic-source">
-                        <span class="traffic-icon">📱</span>
+                        <span class="traffic-icon">○</span>
                         <span>Sosyal Medya</span>
                     </div>
                     <div class="traffic-stats">
@@ -219,7 +217,7 @@
                 </div>
                 <div class="traffic-item">
                     <div class="traffic-source">
-                        <span class="traffic-icon">📧</span>
+                        <span class="traffic-icon">○</span>
                         <span>E-posta</span>
                     </div>
                     <div class="traffic-stats">
@@ -229,7 +227,7 @@
                 </div>
                 <div class="traffic-item">
                     <div class="traffic-source">
-                        <span class="traffic-icon">🔗</span>
+                        <span class="traffic-icon">○</span>
                         <span>Direkt</span>
                     </div>
                     <div class="traffic-stats">
@@ -242,80 +240,449 @@
     </main>
 
     <!-- Scripts -->
+    <script src="utils.js"></script>
     <script src="supabase-config.js"></script>
     <script src="supabase-only-auth.js"></script>
+    <script src="supabase-db.js"></script>
     <script src="auth-guard.js"></script>
     <script>
+        let charts = {};
+        let analyticsData = {
+            revenue: { current: 0, previous: 0 },
+            orders: { current: 0, previous: 0 },
+            avgOrder: { current: 0, previous: 0 },
+            conversionRate: { current: 0, previous: 0 },
+            topProducts: [],
+            categoryData: {},
+            customerSegments: {},
+            trafficSources: {},
+            salesTrend: { labels: [], revenue: [], orders: [] }
+        };
+
         // Initialize auth check on page load
         document.addEventListener('DOMContentLoaded', async () => {
             // Auth guard will handle authentication automatically
             
+            // Load analytics data
+            await loadAnalyticsData();
+            
             // Initialize charts
             initCharts();
+            
+            // Set up period change listener
+            document.getElementById('global-period').addEventListener('change', async () => {
+                await loadAnalyticsData();
+                updateAllCharts();
+            });
         });
+
+        async function loadAnalyticsData() {
+            const period = document.getElementById('global-period').value;
+            const now = new Date();
+            let startDate, previousStartDate, previousEndDate;
+            
+            switch(period) {
+                case 'week':
+                    startDate = new Date(now.setDate(now.getDate() - 7));
+                    previousEndDate = new Date(startDate);
+                    previousStartDate = new Date(previousEndDate.setDate(previousEndDate.getDate() - 7));
+                    break;
+                case 'month':
+                    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                    previousEndDate = new Date(startDate);
+                    previousStartDate = new Date(previousEndDate.getFullYear(), previousEndDate.getMonth() - 1, 1);
+                    break;
+                case 'quarter':
+                    const currentQuarter = Math.floor(now.getMonth() / 3);
+                    startDate = new Date(now.getFullYear(), currentQuarter * 3, 1);
+                    previousEndDate = new Date(startDate);
+                    previousStartDate = new Date(previousEndDate.getFullYear(), previousEndDate.getMonth() - 3, 1);
+                    break;
+                case 'year':
+                    startDate = new Date(now.getFullYear(), 0, 1);
+                    previousEndDate = new Date(startDate);
+                    previousStartDate = new Date(previousEndDate.getFullYear() - 1, 0, 1);
+                    break;
+            }
+            
+            // Get orders for current and previous period
+            const currentOrders = await window.db.orders.list({
+                startDate: startDate.toISOString(),
+                endDate: new Date().toISOString()
+            });
+            
+            const previousOrders = await window.db.orders.list({
+                startDate: previousStartDate.toISOString(),
+                endDate: previousEndDate.toISOString()
+            });
+            
+            // Calculate metrics
+            analyticsData.revenue.current = currentOrders.reduce((sum, order) => sum + order.total, 0);
+            analyticsData.revenue.previous = previousOrders.reduce((sum, order) => sum + order.total, 0);
+            
+            analyticsData.orders.current = currentOrders.length;
+            analyticsData.orders.previous = previousOrders.length;
+            
+            analyticsData.avgOrder.current = analyticsData.orders.current > 0 ? 
+                analyticsData.revenue.current / analyticsData.orders.current : 0;
+            analyticsData.avgOrder.previous = analyticsData.orders.previous > 0 ? 
+                analyticsData.revenue.previous / analyticsData.orders.previous : 0;
+            
+            // Calculate top products
+            const productSales = {};
+            currentOrders.forEach(order => {
+                order.items.forEach(item => {
+                    if (!productSales[item.product_name]) {
+                        productSales[item.product_name] = {
+                            name: item.product_name,
+                            quantity: 0,
+                            revenue: 0
+                        };
+                    }
+                    productSales[item.product_name].quantity += item.quantity;
+                    productSales[item.product_name].revenue += item.quantity * item.price;
+                });
+            });
+            
+            analyticsData.topProducts = Object.values(productSales)
+                .sort((a, b) => b.revenue - a.revenue)
+                .slice(0, 5);
+            
+            // Calculate category distribution
+            const categoryRevenue = {};
+            currentOrders.forEach(order => {
+                order.items.forEach(item => {
+                    if (!categoryRevenue[item.category]) {
+                        categoryRevenue[item.category] = 0;
+                    }
+                    categoryRevenue[item.category] += item.quantity * item.price;
+                });
+            });
+            analyticsData.categoryData = categoryRevenue;
+            
+            // Calculate customer segments
+            const customers = await window.db.customers.list();
+            const customerOrders = {};
+            currentOrders.forEach(order => {
+                customerOrders[order.customer_id] = (customerOrders[order.customer_id] || 0) + 1;
+            });
+            
+            const segments = { VIP: 0, Düzenli: 0, Yeni: 0, Pasif: 0 };
+            customers.forEach(customer => {
+                const orderCount = customerOrders[customer.id] || 0;
+                if (orderCount >= 10) segments.VIP++;
+                else if (orderCount >= 5) segments.Düzenli++;
+                else if (orderCount >= 1) segments.Yeni++;
+                else segments.Pasif++;
+            });
+            analyticsData.customerSegments = segments;
+            
+            // Calculate sales trend (last 7 data points)
+            const trendData = calculateSalesTrend(currentOrders, period);
+            analyticsData.salesTrend = trendData;
+            
+            // Update KPI cards
+            updateKPICards();
+            
+            // Update top products list
+            updateTopProductsList();
+        }
+
+        function calculateSalesTrend(orders, period) {
+            const trendData = { labels: [], revenue: [], orders: [] };
+            const dataPoints = 7;
+            const now = new Date();
+            
+            for (let i = dataPoints - 1; i >= 0; i--) {
+                let date, label;
+                
+                switch(period) {
+                    case 'week':
+                        date = new Date(now);
+                        date.setDate(date.getDate() - i);
+                        label = date.getDate().toString();
+                        break;
+                    case 'month':
+                        date = new Date(now);
+                        date.setDate(date.getDate() - (i * 4));
+                        label = date.getDate().toString();
+                        break;
+                    case 'quarter':
+                        date = new Date(now);
+                        date.setDate(date.getDate() - (i * 13));
+                        label = 'W' + Math.floor((now - date) / (7 * 24 * 60 * 60 * 1000));
+                        break;
+                    case 'year':
+                        date = new Date(now);
+                        date.setMonth(date.getMonth() - (i * 2));
+                        label = date.toLocaleString('tr-TR', { month: 'short' });
+                        break;
+                }
+                
+                const dayOrders = orders.filter(order => {
+                    const orderDate = new Date(order.created_at);
+                    return orderDate.toDateString() === date.toDateString();
+                });
+                
+                trendData.labels.push(label);
+                trendData.revenue.push(dayOrders.reduce((sum, order) => sum + order.total, 0));
+                trendData.orders.push(dayOrders.length);
+            }
+            
+            return trendData;
+        }
+
+        function updateKPICards() {
+            // Revenue
+            const revenueChange = analyticsData.revenue.previous > 0 ? 
+                ((analyticsData.revenue.current - analyticsData.revenue.previous) / analyticsData.revenue.previous * 100).toFixed(1) : 0;
+            document.querySelector('.kpi-card:nth-child(1) .kpi-value').textContent = 
+                '₺' + analyticsData.revenue.current.toLocaleString('tr-TR');
+            document.querySelector('.kpi-card:nth-child(1) .kpi-comparison').textContent = 
+                'Geçen dönem: ₺' + analyticsData.revenue.previous.toLocaleString('tr-TR');
+            updateKPIChange(1, revenueChange);
+            
+            // Orders
+            const ordersChange = analyticsData.orders.previous > 0 ? 
+                ((analyticsData.orders.current - analyticsData.orders.previous) / analyticsData.orders.previous * 100).toFixed(1) : 0;
+            document.querySelector('.kpi-card:nth-child(2) .kpi-value').textContent = 
+                analyticsData.orders.current;
+            document.querySelector('.kpi-card:nth-child(2) .kpi-comparison').textContent = 
+                'Geçen dönem: ' + analyticsData.orders.previous;
+            updateKPIChange(2, ordersChange);
+            
+            // Average Order
+            const avgOrderChange = analyticsData.avgOrder.previous > 0 ? 
+                ((analyticsData.avgOrder.current - analyticsData.avgOrder.previous) / analyticsData.avgOrder.previous * 100).toFixed(1) : 0;
+            document.querySelector('.kpi-card:nth-child(3) .kpi-value').textContent = 
+                '₺' + Math.round(analyticsData.avgOrder.current).toLocaleString('tr-TR');
+            document.querySelector('.kpi-card:nth-child(3) .kpi-comparison').textContent = 
+                'Geçen dönem: ₺' + Math.round(analyticsData.avgOrder.previous).toLocaleString('tr-TR');
+            updateKPIChange(3, avgOrderChange);
+        }
+
+        function updateKPIChange(cardIndex, change) {
+            const changeElement = document.querySelector(`.kpi-card:nth-child(${cardIndex}) .kpi-change`);
+            changeElement.textContent = (change >= 0 ? '+' : '') + change + '%';
+            changeElement.className = 'kpi-change ' + (change >= 0 ? 'positive' : 'negative');
+        }
+
+        function updateTopProductsList() {
+            const listContainer = document.querySelector('.top-products-list');
+            listContainer.innerHTML = analyticsData.topProducts.map((product, index) => `
+                <div class="product-item">
+                    <span class="product-rank">${index + 1}</span>
+                    <div class="product-details">
+                        <p class="product-name">${product.name}</p>
+                        <p class="product-sales">${product.quantity} satış</p>
+                    </div>
+                    <span class="product-revenue">₺${product.revenue.toLocaleString('tr-TR')}</span>
+                </div>
+            `).join('');
+        }
 
         function initCharts() {
             // Sales Trend Chart
             const salesCtx = document.getElementById('salesTrendChart').getContext('2d');
-            new Chart(salesCtx, {
+            charts.salesTrend = new Chart(salesCtx, {
                 type: 'line',
                 data: {
-                    labels: ['1', '5', '10', '15', '20', '25', '30'],
+                    labels: analyticsData.salesTrend.labels,
                     datasets: [{
                         label: 'Gelir',
-                        data: [12000, 19000, 15000, 25000, 22000, 30000, 28000],
-                        borderColor: '#4CAF50',
-                        tension: 0.1
+                        data: analyticsData.salesTrend.revenue,
+                        borderColor: '#1e88e5',
+                        backgroundColor: 'rgba(30, 136, 229, 0.1)',
+                        tension: 0.4,
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        pointHoverRadius: 4
                     }]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false
+                    ...window.utils.chartDefaultOptions,
+                    scales: {
+                        ...window.utils.chartDefaultOptions.scales,
+                        y: {
+                            ...window.utils.chartDefaultOptions.scales.y,
+                            ticks: {
+                                ...window.utils.chartDefaultOptions.scales.y.ticks,
+                                callback: function(value) {
+                                    return '₺' + value.toLocaleString('tr-TR');
+                                }
+                            }
+                        }
+                    }
                 }
             });
 
             // Category Chart
+            const categoryLabels = Object.keys(analyticsData.categoryData);
+            const categoryValues = Object.values(analyticsData.categoryData);
+            
             const categoryCtx = document.getElementById('categoryChart').getContext('2d');
-            new Chart(categoryCtx, {
+            charts.category = new Chart(categoryCtx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Gömlekler', 'Pantolonlar', 'Ceketler', 'Aksesuarlar'],
+                    labels: categoryLabels,
                     datasets: [{
-                        data: [35, 25, 30, 10],
-                        backgroundColor: ['#4CAF50', '#2196F3', '#FF9800', '#E91E63']
+                        data: categoryValues,
+                        backgroundColor: ['#1e88e5', '#43a047', '#fb8c00', '#e53935', '#8e24aa', '#546e7a'],
+                        borderWidth: 0
                     }]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false
+                    ...window.utils.chartDefaultOptions,
+                    plugins: {
+                        ...window.utils.chartDefaultOptions.plugins,
+                        legend: {
+                            ...window.utils.chartDefaultOptions.plugins.legend,
+                            position: 'bottom'
+                        }
+                    }
                 }
             });
 
             // Customer Segment Chart
+            const segmentLabels = Object.keys(analyticsData.customerSegments);
+            const segmentValues = Object.values(analyticsData.customerSegments);
+            
             const segmentCtx = document.getElementById('customerSegmentChart').getContext('2d');
-            new Chart(segmentCtx, {
+            charts.customerSegment = new Chart(segmentCtx, {
                 type: 'bar',
                 data: {
-                    labels: ['VIP', 'Düzenli', 'Yeni', 'Pasif'],
+                    labels: segmentLabels,
                     datasets: [{
                         label: 'Müşteri Sayısı',
-                        data: [89, 234, 145, 67],
-                        backgroundColor: '#2196F3'
+                        data: segmentValues,
+                        backgroundColor: '#1e88e5',
+                        borderRadius: 4
                     }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false
-                }
+                options: window.utils.chartDefaultOptions
             });
         }
 
-        function updateSalesChart(type) {
-            alert('Grafik güncelleniyor: ' + type);
+        function updateAllCharts() {
+            // Update Sales Trend
+            if (charts.salesTrend) {
+                charts.salesTrend.data.labels = analyticsData.salesTrend.labels;
+                charts.salesTrend.data.datasets[0].data = analyticsData.salesTrend.revenue;
+                charts.salesTrend.update();
+            }
+            
+            // Update Category Chart
+            if (charts.category) {
+                const categoryLabels = Object.keys(analyticsData.categoryData);
+                const categoryValues = Object.values(analyticsData.categoryData);
+                charts.category.data.labels = categoryLabels;
+                charts.category.data.datasets[0].data = categoryValues;
+                charts.category.update();
+            }
+            
+            // Update Customer Segment Chart
+            if (charts.customerSegment) {
+                const segmentLabels = Object.keys(analyticsData.customerSegments);
+                const segmentValues = Object.values(analyticsData.customerSegments);
+                charts.customerSegment.data.labels = segmentLabels;
+                charts.customerSegment.data.datasets[0].data = segmentValues;
+                charts.customerSegment.update();
+            }
         }
 
-        function exportReport() {
-            alert('Analiz raporu indiriliyor...');
+        function updateSalesChart(type) {
+            const buttons = document.querySelectorAll('.chart-actions .chart-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            if (charts.salesTrend) {
+                if (type === 'revenue') {
+                    charts.salesTrend.data.datasets[0].label = 'Gelir';
+                    charts.salesTrend.data.datasets[0].data = analyticsData.salesTrend.revenue;
+                    charts.salesTrend.options.scales.y.ticks.callback = function(value) {
+                        return '₺' + value.toLocaleString('tr-TR');
+                    };
+                } else {
+                    charts.salesTrend.data.datasets[0].label = 'Sipariş';
+                    charts.salesTrend.data.datasets[0].data = analyticsData.salesTrend.orders;
+                    charts.salesTrend.options.scales.y.ticks.callback = function(value) {
+                        return value;
+                    };
+                }
+                charts.salesTrend.update();
+            }
+        }
+
+        async function exportReport() {
+            const period = document.getElementById('global-period').value;
+            const periodText = document.getElementById('global-period').selectedOptions[0].text;
+            
+            const report = {
+                period: periodText,
+                generated: new Date().toLocaleString('tr-TR'),
+                metrics: {
+                    revenue: {
+                        current: analyticsData.revenue.current,
+                        previous: analyticsData.revenue.previous,
+                        change: ((analyticsData.revenue.current - analyticsData.revenue.previous) / analyticsData.revenue.previous * 100).toFixed(1)
+                    },
+                    orders: {
+                        current: analyticsData.orders.current,
+                        previous: analyticsData.orders.previous,
+                        change: ((analyticsData.orders.current - analyticsData.orders.previous) / analyticsData.orders.previous * 100).toFixed(1)
+                    },
+                    avgOrder: {
+                        current: analyticsData.avgOrder.current,
+                        previous: analyticsData.avgOrder.previous,
+                        change: ((analyticsData.avgOrder.current - analyticsData.avgOrder.previous) / analyticsData.avgOrder.previous * 100).toFixed(1)
+                    }
+                },
+                topProducts: analyticsData.topProducts,
+                categoryDistribution: analyticsData.categoryData,
+                customerSegments: analyticsData.customerSegments
+            };
+            
+            // Create CSV content
+            let csvContent = 'Sole Portofino Analiz Raporu\n';
+            csvContent += `Dönem: ${periodText}\n`;
+            csvContent += `Oluşturulma: ${report.generated}\n\n`;
+            
+            csvContent += 'Ana Metrikler\n';
+            csvContent += 'Metrik,Mevcut Dönem,Önceki Dönem,Değişim\n';
+            csvContent += `Gelir,₺${report.metrics.revenue.current.toLocaleString('tr-TR')},₺${report.metrics.revenue.previous.toLocaleString('tr-TR')},${report.metrics.revenue.change}%\n`;
+            csvContent += `Sipariş Sayısı,${report.metrics.orders.current},${report.metrics.orders.previous},${report.metrics.orders.change}%\n`;
+            csvContent += `Ortalama Sipariş,₺${Math.round(report.metrics.avgOrder.current).toLocaleString('tr-TR')},₺${Math.round(report.metrics.avgOrder.previous).toLocaleString('tr-TR')},${report.metrics.avgOrder.change}%\n\n`;
+            
+            csvContent += 'En Çok Satan Ürünler\n';
+            csvContent += 'Sıra,Ürün,Satış Adedi,Gelir\n';
+            report.topProducts.forEach((product, index) => {
+                csvContent += `${index + 1},${product.name},${product.quantity},₺${product.revenue.toLocaleString('tr-TR')}\n`;
+            });
+            
+            csvContent += '\nKategori Dağılımı\n';
+            csvContent += 'Kategori,Gelir\n';
+            Object.entries(report.categoryDistribution).forEach(([category, revenue]) => {
+                csvContent += `${category},₺${revenue.toLocaleString('tr-TR')}\n`;
+            });
+            
+            csvContent += '\nMüşteri Segmentleri\n';
+            csvContent += 'Segment,Müşteri Sayısı\n';
+            Object.entries(report.customerSegments).forEach(([segment, count]) => {
+                csvContent += `${segment},${count}\n`;
+            });
+            
+            // Download CSV
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `sole-portofino-analiz-${period}-${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            window.utils.showNotification('Analiz raporu indirildi', 'success');
         }
     </script>
 </body>

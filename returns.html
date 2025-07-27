@@ -17,39 +17,38 @@
         
         <nav class="sidebar-nav">
             <a href="dashboard.html" class="nav-item">
-                <span class="icon">📊</span>
+                <span class="icon">●</span>
                 <span>Dashboard</span>
             </a>
             <a href="orders.html" class="nav-item">
-                <span class="icon">📦</span>
+                <span class="icon">●</span>
                 <span>Siparişler</span>
                 <span class="badge" id="new-orders-count">0</span>
             </a>
             <a href="products.html" class="nav-item">
-                <span class="icon">👜</span>
+                <span class="icon">●</span>
                 <span>Ürün Yönetimi</span>
             </a>
             <a href="customers.html" class="nav-item">
-                <span class="icon">👥</span>
+                <span class="icon">●</span>
                 <span>Müşteriler</span>
             </a>
             <a href="analytics.html" class="nav-item">
-                <span class="icon">📈</span>
+                <span class="icon">●</span>
                 <span>Analizler</span>
             </a>
             <a href="returns.html" class="nav-item active">
-                <span class="icon">↩️</span>
+                <span class="icon">●</span>
                 <span>İadeler</span>
             </a>
             <a href="settings.html" class="nav-item">
-                <span class="icon">⚙️</span>
+                <span class="icon">●</span>
                 <span>Ayarlar</span>
             </a>
         </nav>
         
         <div class="sidebar-footer">
             <button class="logout-button" id="logout-button">
-                <span class="icon">🚪</span>
                 <span>Çıkış Yap</span>
             </button>
         </div>
@@ -62,7 +61,6 @@
             <h1>İade Yönetimi</h1>
             <div class="header-actions">
                 <button class="refresh-button" onclick="refreshReturns()">
-                    <span class="icon">🔄</span>
                     Yenile
                 </button>
                 <div class="user-info">
@@ -209,52 +207,251 @@
     </div>
 
     <!-- Scripts -->
+    <script src="utils.js"></script>
     <script src="supabase-config.js"></script>
     <script src="supabase-only-auth.js"></script>
+    <script src="supabase-db.js"></script>
     <script src="auth-guard.js"></script>
     <script>
+        let returns = [];
+        let currentPage = 1;
+        const itemsPerPage = 10;
+        let filters = {
+            status: '',
+            reason: '',
+            date: 'week'
+        };
+
         // Initialize auth check on page load
         document.addEventListener('DOMContentLoaded', async () => {
             // Auth guard will handle authentication automatically
+            
+            // Load returns data
+            await loadReturns();
+            
+            // Set up filters
+            document.getElementById('status-filter').addEventListener('change', handleFilterChange);
+            document.getElementById('reason-filter').addEventListener('change', handleFilterChange);
+            document.getElementById('date-filter').addEventListener('change', handleFilterChange);
+            
+            // Set up real-time subscription
+            setupRealtimeSubscription();
         });
 
-        function viewOrder(orderId) {
-            alert('Sipariş detayı: ' + orderId);
-        }
-
-        function approveReturn(returnId) {
-            if (confirm('Bu iadeyi onaylamak istediğinize emin misiniz?')) {
-                alert('İade onaylandı: ' + returnId);
-                // Update status in table
-                location.reload();
+        async function loadReturns() {
+            try {
+                // Get date filter
+                const dateFilter = document.getElementById('date-filter').value;
+                let startDate = null;
+                const now = new Date();
+                
+                switch(dateFilter) {
+                    case 'week':
+                        startDate = new Date(now.setDate(now.getDate() - 7));
+                        break;
+                    case 'month':
+                        startDate = new Date(now.setMonth(now.getMonth() - 1));
+                        break;
+                }
+                
+                // Get returns with filters
+                returns = await window.db.returns.list({
+                    status: filters.status || undefined,
+                    reason: filters.reason || undefined,
+                    startDate: startDate ? startDate.toISOString() : undefined
+                });
+                
+                // Update stats
+                updateReturnStats();
+                
+                // Render table
+                renderReturnsTable();
+            } catch (error) {
+                console.error('Error loading returns:', error);
+                window.utils.showNotification('İadeler yüklenirken hata oluştu', 'error');
             }
         }
 
-        function rejectReturn(returnId) {
+        function updateReturnStats() {
+            const stats = {
+                pending: returns.filter(r => r.status === 'pending').length,
+                approved: returns.filter(r => r.status === 'approved').length,
+                rejected: returns.filter(r => r.status === 'rejected').length,
+                total: returns.length
+            };
+            
+            document.getElementById('pending-returns').textContent = stats.pending;
+            document.getElementById('approved-returns').textContent = stats.approved;
+            document.getElementById('rejected-returns').textContent = stats.rejected;
+            document.getElementById('total-returns').textContent = stats.total;
+        }
+
+        function renderReturnsTable() {
+            const tbody = document.getElementById('returns-list');
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const pageReturns = returns.slice(start, end);
+            
+            tbody.innerHTML = pageReturns.map(returnItem => {
+                const statusClass = `status-${returnItem.status}`;
+                const statusText = {
+                    pending: 'Beklemede',
+                    approved: 'Onaylandı',
+                    rejected: 'Reddedildi',
+                    completed: 'Tamamlandı'
+                }[returnItem.status];
+                
+                const reasonText = {
+                    defective: 'Defolu Ürün',
+                    'wrong-size': 'Yanlış Beden',
+                    'not-as-described': 'Açıklamaya Uymuyor',
+                    other: 'Diğer'
+                }[returnItem.reason];
+                
+                const actions = returnItem.status === 'pending' ? `
+                    <button class="btn-sm btn-success" onclick="approveReturn('${returnItem.id}')" ${returnItem.processing ? 'disabled' : ''}>Onayla</button>
+                    <button class="btn-sm btn-danger" onclick="rejectReturn('${returnItem.id}')" ${returnItem.processing ? 'disabled' : ''}>Reddet</button>
+                ` : `
+                    <button class="btn-sm" onclick="viewReturnDetails('${returnItem.id}')">Detay</button>
+                `;
+                
+                return `
+                    <tr>
+                        <td>${returnItem.id}</td>
+                        <td><a href="#" onclick="viewOrder('${returnItem.order_id}')">${returnItem.order_id}</a></td>
+                        <td>${returnItem.customer_name}</td>
+                        <td>${returnItem.product_name}</td>
+                        <td>${reasonText}</td>
+                        <td>₺${returnItem.amount.toLocaleString('tr-TR')}</td>
+                        <td>${new Date(returnItem.created_at).toLocaleDateString('tr-TR')}</td>
+                        <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                        <td>${actions}</td>
+                    </tr>
+                `;
+            }).join('');
+            
+            // Update pagination
+            const totalPages = Math.ceil(returns.length / itemsPerPage);
+            document.getElementById('current-page').textContent = currentPage;
+            document.getElementById('total-pages').textContent = totalPages || 1;
+        }
+
+        function handleFilterChange() {
+            filters.status = document.getElementById('status-filter').value;
+            filters.reason = document.getElementById('reason-filter').value;
+            filters.date = document.getElementById('date-filter').value;
+            currentPage = 1;
+            loadReturns();
+        }
+
+        async function approveReturn(returnId) {
+            if (confirm('Bu iadeyi onaylamak istediğinize emin misiniz?')) {
+                try {
+                    // Mark as processing
+                    const returnIndex = returns.findIndex(r => r.id === returnId);
+                    if (returnIndex !== -1) {
+                        returns[returnIndex].processing = true;
+                        renderReturnsTable();
+                    }
+                    
+                    await window.db.returns.update(returnId, {
+                        status: 'approved',
+                        approved_at: new Date().toISOString(),
+                        approved_by: window.supabase.auth.getUser().then(r => r.data.user?.email)
+                    });
+                    
+                    window.utils.showNotification('İade onaylandı', 'success');
+                    await loadReturns();
+                } catch (error) {
+                    console.error('Error approving return:', error);
+                    window.utils.showNotification('İade onaylanırken hata oluştu', 'error');
+                    
+                    // Remove processing state
+                    const returnIndex = returns.findIndex(r => r.id === returnId);
+                    if (returnIndex !== -1) {
+                        returns[returnIndex].processing = false;
+                        renderReturnsTable();
+                    }
+                }
+            }
+        }
+
+        async function rejectReturn(returnId) {
             const reason = prompt('Red sebebini giriniz:');
             if (reason) {
-                alert('İade reddedildi: ' + returnId + '\nSebep: ' + reason);
-                // Update status in table
-                location.reload();
+                try {
+                    // Mark as processing
+                    const returnIndex = returns.findIndex(r => r.id === returnId);
+                    if (returnIndex !== -1) {
+                        returns[returnIndex].processing = true;
+                        renderReturnsTable();
+                    }
+                    
+                    await window.db.returns.update(returnId, {
+                        status: 'rejected',
+                        rejected_at: new Date().toISOString(),
+                        rejected_by: window.supabase.auth.getUser().then(r => r.data.user?.email),
+                        rejection_reason: reason
+                    });
+                    
+                    window.utils.showNotification('İade reddedildi', 'success');
+                    await loadReturns();
+                } catch (error) {
+                    console.error('Error rejecting return:', error);
+                    window.utils.showNotification('İade reddedilirken hata oluştu', 'error');
+                    
+                    // Remove processing state
+                    const returnIndex = returns.findIndex(r => r.id === returnId);
+                    if (returnIndex !== -1) {
+                        returns[returnIndex].processing = false;
+                        renderReturnsTable();
+                    }
+                }
             }
         }
 
-        function viewReturnDetails(returnId) {
+        async function viewReturnDetails(returnId) {
+            const returnItem = returns.find(r => r.id === returnId);
+            if (!returnItem) return;
+            
+            const statusText = {
+                pending: 'Beklemede',
+                approved: 'Onaylandı',
+                rejected: 'Reddedildi',
+                completed: 'Tamamlandı'
+            }[returnItem.status];
+            
             document.getElementById('return-modal').style.display = 'flex';
             document.getElementById('return-detail').innerHTML = `
                 <div class="return-detail-content">
-                    <h3>İade No: ${returnId}</h3>
+                    <h3>İade No: ${returnItem.id}</h3>
                     <div class="detail-section">
                         <h4>İade Bilgileri</h4>
-                        <p><strong>Durum:</strong> Onaylandı</p>
-                        <p><strong>Onay Tarihi:</strong> 2024-01-15</p>
-                        <p><strong>İade Tutarı:</strong> ₺1,200</p>
-                        <p><strong>İade Yöntemi:</strong> Banka Havalesi</p>
+                        <p><strong>Durum:</strong> ${statusText}</p>
+                        <p><strong>Talep Tarihi:</strong> ${new Date(returnItem.created_at).toLocaleString('tr-TR')}</p>
+                        ${returnItem.approved_at ? `<p><strong>Onay Tarihi:</strong> ${new Date(returnItem.approved_at).toLocaleString('tr-TR')}</p>` : ''}
+                        ${returnItem.rejected_at ? `<p><strong>Red Tarihi:</strong> ${new Date(returnItem.rejected_at).toLocaleString('tr-TR')}</p>` : ''}
+                        <p><strong>İade Tutarı:</strong> ₺${returnItem.amount.toLocaleString('tr-TR')}</p>
+                        <p><strong>İade Yöntemi:</strong> ${returnItem.refund_method || 'Banka Havalesi'}</p>
                     </div>
                     <div class="detail-section">
-                        <h4>Müşteri Notu</h4>
-                        <p>Ürün üzerinde dikişlerde bozukluk vardı. Fotoğrafları ekliyorum.</p>
+                        <h4>Müşteri Bilgileri</h4>
+                        <p><strong>Ad Soyad:</strong> ${returnItem.customer_name}</p>
+                        <p><strong>Sipariş No:</strong> ${returnItem.order_id}</p>
+                        <p><strong>Ürün:</strong> ${returnItem.product_name}</p>
                     </div>
+                    ${returnItem.customer_note ? `
+                        <div class="detail-section">
+                            <h4>Müşteri Notu</h4>
+                            <p>${returnItem.customer_note}</p>
+                        </div>
+                    ` : ''}
+                    ${returnItem.rejection_reason ? `
+                        <div class="detail-section">
+                            <h4>Red Sebebi</h4>
+                            <p>${returnItem.rejection_reason}</p>
+                        </div>
+                    ` : ''}
                 </div>
             `;
         }
@@ -263,16 +460,38 @@
             document.getElementById('return-modal').style.display = 'none';
         }
 
-        function refreshReturns() {
-            alert('İade listesi yenilendi!');
+        async function viewOrder(orderId) {
+            window.location.href = `orders.html?order=${orderId}`;
+        }
+
+        async function refreshReturns() {
+            await loadReturns();
+            window.utils.showNotification('İade listesi yenilendi', 'success');
         }
 
         function previousPage() {
-            alert('Önceki sayfa');
+            if (currentPage > 1) {
+                currentPage--;
+                renderReturnsTable();
+            }
         }
 
         function nextPage() {
-            alert('Sonraki sayfa');
+            const totalPages = Math.ceil(returns.length / itemsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderReturnsTable();
+            }
+        }
+
+        function setupRealtimeSubscription() {
+            window.supabase
+                .channel('returns-changes')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'returns' }, payload => {
+                    console.log('Return change:', payload);
+                    loadReturns();
+                })
+                .subscribe();
         }
     </script>
 </body>

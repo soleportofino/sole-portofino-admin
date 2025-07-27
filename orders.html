@@ -17,39 +17,39 @@
         
         <nav class="sidebar-nav">
             <a href="dashboard.html" class="nav-item">
-                <span class="icon">📊</span>
+                <span class="icon">•</span>
                 <span>Dashboard</span>
             </a>
             <a href="orders.html" class="nav-item active">
-                <span class="icon">📦</span>
+                <span class="icon">•</span>
                 <span>Siparişler</span>
                 <span class="badge" id="new-orders-count">0</span>
             </a>
             <a href="products.html" class="nav-item">
-                <span class="icon">👜</span>
+                <span class="icon">•</span>
                 <span>Ürün Yönetimi</span>
             </a>
             <a href="customers.html" class="nav-item">
-                <span class="icon">👥</span>
+                <span class="icon">•</span>
                 <span>Müşteriler</span>
             </a>
             <a href="analytics.html" class="nav-item">
-                <span class="icon">📈</span>
+                <span class="icon">•</span>
                 <span>Analizler</span>
             </a>
             <a href="returns.html" class="nav-item">
-                <span class="icon">↩️</span>
+                <span class="icon">•</span>
                 <span>İadeler</span>
             </a>
             <a href="settings.html" class="nav-item">
-                <span class="icon">⚙️</span>
+                <span class="icon">•</span>
                 <span>Ayarlar</span>
             </a>
         </nav>
         
         <div class="sidebar-footer">
             <button class="logout-button" id="logout-button">
-                <span class="icon">🚪</span>
+                <span class="icon">•</span>
                 <span>Çıkış Yap</span>
             </button>
         </div>
@@ -62,7 +62,7 @@
             <h1>Siparişler</h1>
             <div class="header-actions">
                 <button class="refresh-button" onclick="refreshOrders()">
-                    <span class="icon">🔄</span>
+                    <span class="icon">•</span>
                     Yenile
                 </button>
                 <div class="user-info">
@@ -149,97 +149,22 @@
     <script src="supabase-config.js"></script>
     <script src="supabase-only-auth.js"></script>
     <script src="auth-guard.js"></script>
-    <script>
-        // Initialize auth check on page load
+    <script type="module">
+        import { initializeOrders } from './orders-data.js';
+        
+        // Initialize orders page after auth check
         document.addEventListener('DOMContentLoaded', async () => {
             // Auth guard will handle authentication automatically
             
-            // Load orders
-            loadOrders();
+            // Wait a bit for auth to initialize
+            setTimeout(async () => {
+                try {
+                    await initializeOrders();
+                } catch (error) {
+                    console.error('Orders initialization error:', error);
+                }
+            }, 500);
         });
-
-        // Mock orders data
-        const mockOrders = [
-            {
-                id: 'ORD-001',
-                customer: 'Ayşe Yılmaz',
-                products: '2x Gömlek, 1x Pantolon',
-                amount: '₺2,450',
-                status: 'pending',
-                payment: 'Kredi Kartı',
-                date: '2024-01-15'
-            },
-            {
-                id: 'ORD-002',
-                customer: 'Mehmet Öz',
-                products: '1x Ceket',
-                amount: '₺3,200',
-                status: 'shipped',
-                payment: 'Havale',
-                date: '2024-01-14'
-            }
-        ];
-
-        function loadOrders() {
-            const tbody = document.getElementById('orders-list');
-            tbody.innerHTML = mockOrders.map(order => `
-                <tr>
-                    <td><a href="#" onclick="viewOrder('${order.id}')">${order.id}</a></td>
-                    <td>${order.customer}</td>
-                    <td>${order.products}</td>
-                    <td>${order.amount}</td>
-                    <td><span class="status-badge status-${order.status}">${getStatusText(order.status)}</span></td>
-                    <td>${order.payment}</td>
-                    <td>${order.date}</td>
-                    <td>
-                        <button class="action-btn" onclick="viewOrder('${order.id}')">👁️</button>
-                        <button class="action-btn" onclick="editOrder('${order.id}')">✏️</button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        function getStatusText(status) {
-            const statuses = {
-                pending: 'Beklemede',
-                processing: 'İşleniyor',
-                shipped: 'Kargoda',
-                delivered: 'Teslim Edildi',
-                cancelled: 'İptal Edildi'
-            };
-            return statuses[status] || status;
-        }
-
-        function viewOrder(orderId) {
-            document.getElementById('order-modal').style.display = 'flex';
-            document.getElementById('order-detail').innerHTML = `
-                <div class="order-detail-content">
-                    <h3>Sipariş No: ${orderId}</h3>
-                    <p>Detaylı sipariş bilgileri burada gösterilecek...</p>
-                </div>
-            `;
-        }
-
-        function editOrder(orderId) {
-            alert('Sipariş düzenleme: ' + orderId);
-        }
-
-        function closeOrderModal() {
-            document.getElementById('order-modal').style.display = 'none';
-        }
-
-        function refreshOrders() {
-            loadOrders();
-            alert('Siparişler yenilendi!');
-        }
-
-        function previousPage() {
-            alert('Önceki sayfa');
-        }
-
-        function nextPage() {
-            alert('Sonraki sayfa');
-        }
     </script>
 </body>
 </html>

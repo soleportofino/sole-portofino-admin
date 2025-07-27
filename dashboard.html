@@ -18,39 +18,39 @@
         
         <nav class="sidebar-nav">
             <a href="dashboard.html" class="nav-item active">
-                <span class="icon">📊</span>
+                <span class="icon">•</span>
                 <span>Dashboard</span>
             </a>
             <a href="orders.html" class="nav-item">
-                <span class="icon">📦</span>
+                <span class="icon">•</span>
                 <span>Siparişler</span>
                 <span class="badge" id="new-orders-count">0</span>
             </a>
             <a href="products.html" class="nav-item">
-                <span class="icon">👜</span>
+                <span class="icon">•</span>
                 <span>Ürün Yönetimi</span>
             </a>
             <a href="customers.html" class="nav-item">
-                <span class="icon">👥</span>
+                <span class="icon">•</span>
                 <span>Müşteriler</span>
             </a>
             <a href="analytics.html" class="nav-item">
-                <span class="icon">📈</span>
+                <span class="icon">•</span>
                 <span>Analizler</span>
             </a>
             <a href="returns.html" class="nav-item">
-                <span class="icon">↩️</span>
+                <span class="icon">•</span>
                 <span>İadeler</span>
             </a>
             <a href="settings.html" class="nav-item">
-                <span class="icon">⚙️</span>
+                <span class="icon">•</span>
                 <span>Ayarlar</span>
             </a>
         </nav>
         
         <div class="sidebar-footer">
             <button class="logout-button" id="logout-button">
-                <span class="icon">🚪</span>
+                <span class="icon">•</span>
                 <span>Çıkış Yap</span>
             </button>
         </div>
@@ -63,7 +63,7 @@
             <h1>Dashboard</h1>
             <div class="header-actions">
                 <button class="refresh-button" onclick="refreshData()">
-                    <span class="icon">🔄</span>
+                    <span class="icon">•</span>
                     Yenile
                 </button>
                 <div class="user-info">
@@ -75,7 +75,7 @@
         <!-- Stats Grid -->
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-icon" style="background: #4CAF50;">💰</div>
+                <div class="stat-icon" style="background: #4CAF50;">•</div>
                 <div class="stat-content">
                     <h3>Toplam Satış</h3>
                     <p class="stat-value">₺<span id="total-sales">0</span></p>
@@ -84,7 +84,7 @@
             </div>
             
             <div class="stat-card">
-                <div class="stat-icon" style="background: #2196F3;">📦</div>
+                <div class="stat-icon" style="background: #2196F3;">•</div>
                 <div class="stat-content">
                     <h3>Toplam Sipariş</h3>
                     <p class="stat-value" id="total-orders">0</p>
@@ -93,7 +93,7 @@
             </div>
             
             <div class="stat-card">
-                <div class="stat-icon" style="background: #FF9800;">👥</div>
+                <div class="stat-icon" style="background: #FF9800;">•</div>
                 <div class="stat-content">
                     <h3>Müşteriler</h3>
                     <p class="stat-value" id="total-customers">0</p>
@@ -102,7 +102,7 @@
             </div>
             
             <div class="stat-card">
-                <div class="stat-icon" style="background: #E91E63;">🛒</div>
+                <div class="stat-icon" style="background: #E91E63;">•</div>
                 <div class="stat-content">
                     <h3>Dönüşüm Oranı</h3>
                     <p class="stat-value"><span id="conversion-rate">0</span>%</p>
@@ -167,14 +167,14 @@
             <h3>Son Aktiviteler</h3>
             <div class="activity-feed" id="activity-feed">
                 <div class="activity-item">
-                    <span class="activity-icon">🛒</span>
+                    <span class="activity-icon">•</span>
                     <div class="activity-content">
                         <p><strong>Yeni sipariş</strong> - Ayşe Yılmaz</p>
                         <span class="activity-time">5 dakika önce</span>
                     </div>
                 </div>
                 <div class="activity-item">
-                    <span class="activity-icon">👤</span>
+                    <span class="activity-icon">•</span>
                     <div class="activity-content">
                         <p><strong>Yeni müşteri kaydı</strong> - Mehmet Öz</p>
                         <span class="activity-time">1 saat önce</span>
@@ -191,21 +191,22 @@
     <script src="supabase-config.js"></script>
     <script src="supabase-only-auth.js"></script>
     <script src="auth-guard.js"></script>
-    <script>
-        // Initialize on page load
+    <script type="module">
+        import { initializeDashboard } from './dashboard-data.js';
+        
+        // Initialize dashboard after auth check
         document.addEventListener('DOMContentLoaded', async () => {
             // Auth guard will handle authentication automatically
             
-            // Mock data for demo
-            document.getElementById('total-sales').textContent = '125,450';
-            document.getElementById('total-orders').textContent = '342';
-            document.getElementById('total-customers').textContent = '1,234';
-            document.getElementById('new-orders-count').textContent = '5';
+            // Wait a bit for auth to initialize
+            setTimeout(async () => {
+                try {
+                    await initializeDashboard();
+                } catch (error) {
+                    console.error('Dashboard initialization error:', error);
+                }
+            }, 500);
         });
-        
-        function refreshData() {
-            alert('Veriler yenilendi!');
-        }
     </script>
 </body>
 </html>
