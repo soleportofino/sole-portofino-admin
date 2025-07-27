@@ -5,13 +5,14 @@
 const SUPABASE_URL_PLACEHOLDER = '__SUPABASE_URL__';
 const SUPABASE_ANON_KEY_PLACEHOLDER = '__SUPABASE_ANON_KEY__';
 
-// Global variables
+// Global variables with singleton pattern
 window.SUPABASE_CONFIG = {
     url: null,
     anonKey: null,
     client: null,
     initialized: false,
-    error: null
+    error: null,
+    initPromise: null  // Singleton promise to prevent multiple initializations
 };
 
 // Check if debug mode is enabled
@@ -217,7 +218,7 @@ async function initializeSupabase(config) {
     const client = window.supabase.createClient(config.url, config.anonKey, {
         auth: {
             autoRefreshToken: true,
-            persistSession: true,
+            persistSession: false,  // DISABLED to prevent auto-login issues
             detectSessionInUrl: true,
             storage: window.localStorage
         }
@@ -235,14 +236,24 @@ async function initializeSupabase(config) {
     return client;
 }
 
-// Main initialization function
+// Main initialization function with singleton pattern
 async function initializeSupabaseConfig() {
-    if (window.SUPABASE_CONFIG.initialized) {
-        log('Already initialized');
+    // Return existing client if already initialized
+    if (window.SUPABASE_CONFIG.initialized && window.SUPABASE_CONFIG.client) {
+        log('Already initialized, returning existing client');
         return window.SUPABASE_CONFIG.client;
+    }
+    
+    // Return existing promise if initialization is in progress
+    if (window.SUPABASE_CONFIG.initPromise) {
+        log('Initialization already in progress, waiting...');
+        return window.SUPABASE_CONFIG.initPromise;
     }
 
     log('Starting Supabase initialization...');
+    
+    // Create singleton promise
+    window.SUPABASE_CONFIG.initPromise = (async () => {
 
     try {
         // Step 1: Load Supabase library
@@ -265,7 +276,9 @@ async function initializeSupabaseConfig() {
         const client = await initializeSupabase(config);
 
         // Step 4: Store in global config
+        // Update global config while preserving initPromise
         window.SUPABASE_CONFIG = {
+            ...window.SUPABASE_CONFIG,
             url: config.url,
             anonKey: config.anonKey,
             client: client,
@@ -332,6 +345,9 @@ async function initializeSupabaseConfig() {
 
         throw error;
     }
+    })();
+    
+    return window.SUPABASE_CONFIG.initPromise;
 }
 
 // Auto-initialize when DOM is ready

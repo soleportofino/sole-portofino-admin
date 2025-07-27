@@ -6,8 +6,14 @@ export default {
     const url = new URL(request.url);
     
     // Handle JavaScript files to inject environment variables
-    // IMPORTANT: Skip functions directory to avoid breaking JSON responses
-    if (url.pathname.endsWith('.js') && !url.pathname.includes('/functions/')) {
+    // Only inject into specific files that need environment variables
+    const INJECTABLE_FILES = [
+      '/supabase-config.js',
+      '/supabase-only-auth.js',
+      '/auth-guard.js'
+    ];
+    
+    if (INJECTABLE_FILES.some(file => url.pathname.endsWith(file))) {
       const response = await env.ASSETS.fetch(request);
       let content = await response.text();
       

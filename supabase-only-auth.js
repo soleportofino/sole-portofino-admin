@@ -104,7 +104,38 @@ async function signOut() {
         window.AUTH_STATE.user = null;
         window.AUTH_STATE.session = null;
         
-        log('✅ Sign out successful');
+        // Clear all Supabase related data from localStorage
+        const keysToRemove = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && (
+                key.includes('supabase') || 
+                key.includes('SUPABASE') || 
+                key.includes('sb-') ||
+                key === 'isLoggedIn' ||
+                key === 'authMode' ||
+                key === 'userEmail'
+            )) {
+                keysToRemove.push(key);
+            }
+        }
+        
+        keysToRemove.forEach(key => {
+            log(`Removing localStorage key: ${key}`);
+            localStorage.removeItem(key);
+        });
+        
+        // Clear session storage
+        sessionStorage.clear();
+        
+        // Clear auth cache if exists
+        if (window.AUTH_CACHE) {
+            window.AUTH_CACHE.lastCheck = null;
+            window.AUTH_CACHE.isAuthenticated = false;
+            window.AUTH_CACHE.user = null;
+        }
+        
+        log('✅ Sign out successful - all auth data cleared');
         
         // Redirect to login
         window.location.href = '/';
